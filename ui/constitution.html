@@ -128,16 +128,21 @@
     <div id="props"><div class="empty">No proposals. The vocabulary currently fits the world.</div></div>
     <div class="connect" id="walletline">
       <div class="signin" id="signin">
-        <span class="eyebrow" style="display:block;margin-bottom:8px">Author sign-in — standing is a file and a passphrase</span>
+        <span class="eyebrow" style="display:block;margin-bottom:8px">Author sign-in</span>
         <div class="signrow">
-          <label class="filebtn"><input type="file" id="ksfile" accept="*/*" hidden />Choose keystore</label>
-          <span id="ksname" class="ksname">no file</span>
-          <input type="password" id="kspass" placeholder="passphrase" autocomplete="off" />
+          <input type="password" id="authorpk" placeholder="0x… author private key" autocomplete="off" style="min-width:260px;flex:1" />
           <button id="ksgo">Sign in</button>
           <button class="ghost" id="connect" title="Use a browser wallet instead">MetaMask</button>
         </div>
-        <span id="signerr" class="signerr"></span>
-      </div>
+        <details style="margin-top:10px">
+          <summary style="font:11px var(--mono);color:var(--meta);cursor:pointer">use an encrypted keystore file instead</summary>
+          <div class="signrow" style="margin-top:8px">
+            <label class="filebtn"><input type="file" id="ksfile" hidden />Choose keystore</label>
+            <span id="ksname" class="ksname">no file</span>
+            <input type="password" id="kspass" placeholder="passphrase" autocomplete="off" />
+          </div>
+        </details>
+        <span id="signerr" class="signerr"></span></div>
     </div>
   </section>
 </div>
@@ -328,22 +333,28 @@ $('ksfile').addEventListener('change', async e=>{
 });
 $('ksgo').addEventListener('click', async ()=>{
   $('signerr').textContent = '';
-  if(!ksJson){ $('signerr').textContent = 'Choose the keystore file first (e.g. ~/.foundry/keystores/monad-deployer).'; return; }
-  const pass = $('kspass').value;
-  if(!pass){ $('signerr').textContent = 'Passphrase required.'; return; }
-  $('ksgo').disabled = true; $('ksgo').textContent = 'Decrypting…';
+  const pasted = ($('authorpk').value||'').trim();
+  $('ksgo').disabled = true; $('ksgo').textContent = 'Signing in…';
   try{
-    const { Wallet } = await import('https://esm.sh/ethers@6.13.4');
-    const w = await Wallet.fromEncryptedJson(ksJson, pass);
+    let pk = pasted;
+    if(!/^0x[0-9a-fA-F]{64}$/.test(pk)){
+      if(!ksJson) throw new Error('Paste the author key, or open the keystore option below.');
+      const { Wallet } = await import('https://esm.sh/ethers@6.13.4');
+      const w = await Wallet.fromEncryptedJson(ksJson, $('kspass').value);
+      pk = w.privateKey;
+    }
     const { privateKeyToAccount } = await import('https://esm.sh/viem@2.21.19/accounts');
-    const acct = privateKeyToAccount(w.privateKey);
+    const acct = privateKeyToAccount(pk);
     wallet = createWalletClient({ chain, transport, account: acct });
+    localStorage.setItem('ao_author_pk', pk);
     signedIn(acct.address);
   } catch(err){
-    $('signerr').textContent = 'Decryption failed — wrong passphrase or not a keystore JSON.';
+    $('signerr').textContent = 'Sign-in failed — check the key or passphrase.';
     $('ksgo').disabled = false; $('ksgo').textContent = 'Sign in';
   }
 });
+const remembered = localStorage.getItem('ao_author_pk');
+if(remembered) $('authorpk').value = remembered;
 $('kspass').addEventListener('keydown', e=>{ if(e.key==='Enter') $('ksgo').click(); });
 
 // Secondary: a browser wallet, if one exists.
