@@ -142,7 +142,7 @@
 <footer><div class="wrap">A civil servant, not a legislator. Delegated authority has a line number; every one of them is linked above.</div></footer>
 
 <script type="module">
-import { createPublicClient, http, defineChain, formatEther, parseAbi, decodeEventLog } from 'https://esm.sh/viem@2.21.19';
+import { createPublicClient, http, fallback, defineChain, formatEther, parseAbi, decodeEventLog } from 'https://esm.sh/viem@2.21.19';
 
 const AO = '0xD12124f5128aa7696A8A4b785750A4C8819Ac991';
 const RPC = 'https://testnet-rpc.monad.xyz';
@@ -167,7 +167,9 @@ const abi = parseAbi([
   'event ParameterCommitted(uint256 indexed paramId,int256 oldValue,int256 newValue,bool markClosed,uint256[] citedResiduals,bytes32 reasoningHash)',
   'event ProposalOpened(uint256 indexed proposalId,uint8 diagnosis,bytes32 reasoningHash)',
 ]);
-const pub = createPublicClient({ chain, transport: http() });
+const RPCS = ['https://testnet-rpc.monad.xyz','https://rpc.ankr.com/monad_testnet','https://monad-testnet.drpc.org','https://10143.rpc.thirdweb.com'];
+const transport = fallback(RPCS.map(u=>http(u)));
+const pub = createPublicClient({ chain, transport });
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 async function readC(functionName, args){
   for(let a=0;a<4;a++){

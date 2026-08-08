@@ -231,7 +231,7 @@ setTimeout(()=>{ if(!window.__aoReady){ const el=document.getElementById('e-p1')
   if(el&&!el.textContent) el.textContent='Page script has not loaded (esm.sh import may be blocked on this network). Hard-reload; if it persists, try phone hotspot.'; }},6000);
 </script>
 <script type="module">
-import { createPublicClient, createWalletClient, http, defineChain, formatEther, parseEther, parseAbi, keccak256, toHex } from 'https://esm.sh/viem@2.21.19';
+import { createPublicClient, createWalletClient, http, fallback, defineChain, formatEther, parseEther, parseAbi, keccak256, toHex } from 'https://esm.sh/viem@2.21.19';
 import { privateKeyToAccount } from 'https://esm.sh/viem@2.21.19/accounts';
 window.__aoReady=true;
 
@@ -256,7 +256,9 @@ const abi = parseAbi([
   'function citedPay(uint256,uint256,address,uint256)',
   'function ratifyProposal(uint256) returns (uint256)','function refuseProposal(uint256,string)',
 ]);
-const pub = createPublicClient({ chain, transport: http() });
+const RPCS = ['https://testnet-rpc.monad.xyz','https://rpc.ankr.com/monad_testnet','https://monad-testnet.drpc.org','https://10143.rpc.thirdweb.com'];
+const transport = fallback(RPCS.map(u=>http(u)));
+const pub = createPublicClient({ chain, transport });
 const $ = id => document.getElementById(id);
 const fmt = w => (+formatEther(BigInt(w))).toFixed(4).replace(/0+$/,'').replace(/\.$/,'')+' MON';
 const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -294,12 +296,12 @@ $('go1').onclick = async ()=>{
       authorPk = w.privateKey;
     }
     const a = privateKeyToAccount(authorPk);
-    authorClient = createWalletClient({ chain, transport:http(), account:a });
+    authorClient = createWalletClient({ chain, transport, account:a });
     $('ok-author').textContent = `standing: ${a.address}`;
     const pk = $('sripk').value.trim();
     if(!isPk(pk)) throw new Error('Fuse key must be a 0x… 64-hex private key.');
     const s = privateKeyToAccount(pk);
-    sriClient = createWalletClient({ chain, transport:http(), account:s });
+    sriClient = createWalletClient({ chain, transport, account:s });
     $('ok-sri').textContent = `delegation: ${s.address}`;
     const [ab, sb] = await Promise.all([pub.getBalance({address:a.address}), pub.getBalance({address:s.address})]);
     if(sb===0n) throw new Error('The fuse wallet has no gas — fund it before dispatching.');

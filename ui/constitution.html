@@ -148,7 +148,7 @@
 </div></footer>
 
 <script type="module">
-import { createPublicClient, createWalletClient, custom, http, defineChain, formatEther, parseAbi } from 'https://esm.sh/viem@2.21.19';
+import { createPublicClient, createWalletClient, custom, http, fallback, defineChain, formatEther, parseAbi } from 'https://esm.sh/viem@2.21.19';
 
 // ── CONFIG ──────────────────────────────────────────────────────────
 const AO = '0xD12124f5128aa7696A8A4b785750A4C8819Ac991';
@@ -179,7 +179,9 @@ const abi = parseAbi([
   'event TermAmended(uint256 indexed termId,uint32 newVersion,string reason)',
 ]);
 
-const pub = createPublicClient({ chain, transport: http() });
+const RPCS = ['https://testnet-rpc.monad.xyz','https://rpc.ankr.com/monad_testnet','https://monad-testnet.drpc.org','https://10143.rpc.thirdweb.com'];
+const transport = fallback(RPCS.map(u=>http(u)));
+const pub = createPublicClient({ chain, transport });
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 async function readC(functionName, args){
   for(let a=0;a<4;a++){
@@ -335,7 +337,7 @@ $('ksgo').addEventListener('click', async ()=>{
     const w = await Wallet.fromEncryptedJson(ksJson, pass);
     const { privateKeyToAccount } = await import('https://esm.sh/viem@2.21.19/accounts');
     const acct = privateKeyToAccount(w.privateKey);
-    wallet = createWalletClient({ chain, transport: http(), account: acct });
+    wallet = createWalletClient({ chain, transport, account: acct });
     signedIn(acct.address);
   } catch(err){
     $('signerr').textContent = 'Decryption failed — wrong passphrase or not a keystore JSON.';
