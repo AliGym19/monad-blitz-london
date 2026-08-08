@@ -625,6 +625,133 @@ $('loop').onclick = async ()=>{ await refreshReuse(); page(2); };
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') set(false); });
 })();
 </script>
+<canvas id="helix" aria-hidden="true"></canvas>
+<style>
+#helix{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;
+    opacity:0;transition:opacity 1.1s ease}
+  #helix.show{opacity:.55}
+  @media(prefers-reduced-motion:reduce){ #helix{display:none} }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// Attesta double helix — sign-in background. Nodes condense onto two spiralling
+// strands with base-pair rungs, twist, dissipate, reform. Visible on page 1 only.
+(function(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const FIELDS={};
+  function initHelix(id){
+    if(typeof THREE==='undefined') return;
+    if(FIELDS[id]) return;
+    const canvas=document.getElementById(id); if(!canvas) return;
+    let w=canvas.clientWidth,h=canvas.clientHeight; if(!w||!h) return;
+    const dpr=Math.min(2,window.devicePixelRatio||1);
+    const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+    renderer.setPixelRatio(dpr); renderer.setSize(w,h,false); renderer.setClearColor(0x000000,0);
+    const scene=new THREE.Scene();
+    const cam=new THREE.OrthographicCamera(-w/2,w/2,h/2,-h/2,-1000,1000); cam.position.z=10;
+    const N=2200;
+    const pos=new Float32Array(N*2*3), col=new Float32Array(N*2*3);
+    const npos=new Float32Array(N*3), ncol=new Float32Array(N*3);
+    const LIVE=[0.357,0.486,0.980], INK=[0.929,0.918,0.890], OK=[0.298,0.686,0.490];
+    const P=[];
+    for(let i=0;i<N;i++){
+      const x=(Math.random()-0.5)*w, y=(Math.random()-0.5)*h;
+      const isRung=Math.random()<0.22;
+      const strand=Math.random()<0.5?0:1;
+      const u=Math.random(), s=Math.random();
+      const base=isRung?OK:(strand===0?LIVE:INK);
+      P.push({x,y,hx:x,hy:y,vx:0,vy:0,sp:0.6+Math.random()*0.9,ph:Math.random()*6.283,isRung,strand,u,s,base});
+      const m=0.5+Math.random()*0.4;
+      for(let k=0;k<2;k++){const o=(i*2+k)*3;pos[o]=x;pos[o+1]=y;pos[o+2]=0;col[o]=base[0]*m;col[o+1]=base[1]*m;col[o+2]=base[2]*m;}
+      npos[i*3]=x;npos[i*3+1]=y;ncol[i*3]=base[0]*m;ncol[i*3+1]=base[1]*m;ncol[i*3+2]=base[2]*m;
+    }
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+    scene.add(new THREE.LineSegments(geo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0.85,depthTest:false})));
+    const ngeo=new THREE.BufferGeometry();
+    ngeo.setAttribute('position',new THREE.BufferAttribute(npos,3));
+    ngeo.setAttribute('color',new THREE.BufferAttribute(ncol,3));
+    scene.add(new THREE.Points(ngeo,new THREE.PointsMaterial({size:2,vertexColors:true,transparent:true,opacity:0.95,sizeAttenuation:false,depthTest:false})));
+    FIELDS[id]={id,renderer,scene,cam,geo,ngeo,P,pos,col,npos,ncol,w,h,t0:performance.now()};
+  }
+  function stepHelix(F){
+    const canvas=document.getElementById(F.id); if(!canvas) return;
+    let w=canvas.clientWidth,h=canvas.clientHeight;
+    if(w&&h&&(w!==F.w||h!==F.h)){F.w=w;F.h=h;F.renderer.setSize(w,h,false);
+      F.cam.left=-w/2;F.cam.right=w/2;F.cam.top=h/2;F.cam.bottom=-h/2;F.cam.updateProjectionMatrix();}
+    const t=(performance.now()-F.t0)/1000,P=F.P,pos=F.pos,col=F.col,npos=F.npos,ncol=F.ncol,W=F.w,H=F.h,TAIL=4,TWO=6.28318;
+    // right of centre, clear of the sign-in panel
+    const cx=W*0.28, spanH=H*0.98, R=Math.min(W,H)*0.165, turns=3.1, spin=t*0.22;
+    const CYC=17, cph=(t%CYC)/CYC, ss=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
+    let form;
+    if(cph<0.20) form=ss(cph/0.20);
+    else if(cph<0.72) form=1;
+    else form=1-ss((cph-0.72)/0.28);
+    const hdrift=Math.min(W,H)*0.0004;
+    for(let i=0;i<P.length;i++){
+      const p=P[i];
+      const y=(p.u-0.5)*spanH;
+      const theta=p.u*turns*TWO+spin;
+      let tx,depth;
+      if(p.isRung){
+        const x0=cx+Math.cos(theta)*R, x1=cx+Math.cos(theta+Math.PI)*R;
+        const d0=Math.sin(theta), d1=Math.sin(theta+Math.PI);
+        tx=x0+(x1-x0)*p.s; depth=d0+(d1-d0)*p.s;
+      } else {
+        const th=theta+p.strand*Math.PI;
+        tx=cx+Math.cos(th)*R; depth=Math.sin(th);
+      }
+      const ty=y;
+      const fa=Math.sin(p.hy*0.0026+t*0.06)+0.5*Math.cos((p.hx+p.hy)*0.0011+t*0.03);
+      const fb=Math.cos(p.hx*0.0024-t*0.05)+0.5*Math.sin((p.hx-p.hy)*0.0010-t*0.025);
+      const ang=fa+fb+p.ph;
+      p.hx+=Math.cos(ang)*hdrift; p.hy+=Math.sin(ang)*hdrift*0.7;
+      if(p.hx<-W/2)p.hx=W/2; if(p.hx>W/2)p.hx=-W/2;
+      if(p.hy<-H/2)p.hy=H/2; if(p.hy>H/2)p.hy=-H/2;
+      const dx=p.hx+(tx-p.hx)*form, dy=p.hy+(ty-p.hy)*form;
+      const sp=0.85+p.sp*0.12;
+      p.vx=p.vx*0.90+(dx-p.x)*0.026*sp;
+      p.vy=p.vy*0.90+(dy-p.y)*0.026*sp;
+      const vmax=Math.min(W,H)*0.006, v2=p.vx*p.vx+p.vy*p.vy;
+      if(v2>vmax*vmax){const s=vmax/Math.sqrt(v2);p.vx*=s;p.vy*=s;}
+      p.x+=p.vx; p.y+=p.vy;
+      const near=0.5+0.5*depth, bright=(0.32+0.68*near)*(0.45+0.55*form), b=p.base;
+      const o=(i*2)*3;
+      col[o]=col[o+3]=b[0]*bright; col[o+1]=col[o+4]=b[1]*bright; col[o+2]=col[o+5]=b[2]*bright;
+      ncol[i*3]=b[0]*bright; ncol[i*3+1]=b[1]*bright; ncol[i*3+2]=b[2]*bright;
+      pos[o]=p.x-p.vx*TAIL; pos[o+1]=p.y-p.vy*TAIL; pos[o+2]=0;
+      pos[o+3]=p.x; pos[o+4]=p.y; pos[o+5]=0;
+      npos[i*3]=p.x; npos[i*3+1]=p.y;
+    }
+    F.geo.attributes.position.needsUpdate=true; F.geo.attributes.color.needsUpdate=true;
+    F.ngeo.attributes.position.needsUpdate=true; F.ngeo.attributes.color.needsUpdate=true;
+    F.renderer.render(F.scene,F.cam);
+  }
+  // run only while the sign-in page is showing — observer, no edits to page()
+  let active=false, raf=null, failed=false, tries=0;
+  const canvas=document.getElementById('helix');
+  function loop(){
+    if(!active||failed) return;
+    try{
+      const F=FIELDS['helix'];
+      if(!F){ if(tries++>240){failed=true;return;} initHelix('helix'); }
+      else stepHelix(F);
+    }catch(err){ failed=true; console.warn('[helix] disabled:',err&&err.message); return; }
+    raf=requestAnimationFrame(loop);
+  }
+  function sync(){
+    const p1=document.getElementById('p1');
+    const on=!!(p1&&p1.classList.contains('on'));
+    canvas.classList.toggle('show',on);
+    if(on&&!active){ active=true; loop(); }
+    if(!on&&active){ active=false; if(raf)cancelAnimationFrame(raf); }
+  }
+  const p1=document.getElementById('p1');
+  if(p1){ new MutationObserver(sync).observe(p1,{attributes:true,attributeFilter:['class']}); }
+  sync();
+})();
+</script>
 <script src="ao-polish.js"></script>
 </body>
 </html>
