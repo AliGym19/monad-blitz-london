@@ -348,16 +348,23 @@ async function refreshReuse(){
   const pc = Number(await read('paramCount'));
   const termCache = {};
   const opts=[];
-  for(let i=1;i<=pc;i++){
-    const p = await read('params',[BigInt(i)]); await sleep(90);
-    const tid = Number(p[0]);
-    if(!termCache[tid]){ termCache[tid] = await read('terms',[BigInt(tid)]); await sleep(90); }
-    const t = termCache[tid];
-    if(p[7] && (p[1].includes('ceiling')||p[1].includes('wei'))) opts.push({paramId:i,termId:tid,label:`Art.${tid} ${t[0]} · §${tid}.${i} ${p[1]} · ${fmt(p[2])}`});
-  }
-  if(opts.length){ $('reuserow').style.display='';
-    $('reuse').innerHTML = '<option value="">— author a new term —</option>' + opts.map(o=>`<option value="${o.termId}:${o.paramId}">${esc(o.label)}</option>`).join(''); }
+  // chunked: each existing line item appears in the dropdown the moment it loads
+  $('reuse').innerHTML = '<option value="">— author a new term —</option>';
   $('reuse').onchange = ()=>{ $('newterm').style.display = $('reuse').value? 'none':''; };
+  for(let i=1;i<=pc;i++){
+    const p = await read('params',[BigInt(i)]); await sleep(70);
+    const tid = Number(p[0]);
+    if(!termCache[tid]){ termCache[tid] = await read('terms',[BigInt(tid)]); await sleep(70); }
+    const t = termCache[tid];
+    if(p[7] && (p[1].includes('ceiling')||p[1].includes('wei'))){
+      opts.push(i);
+      $('reuserow').style.display='';
+      const o=document.createElement('option');
+      o.value=`${tid}:${i}`;
+      o.textContent=`Art.${tid} ${t[0]} · §${tid}.${i} ${p[1]} · ${fmt(p[2])}`;
+      $('reuse').appendChild(o);
+    }
+  }
 }
 document.querySelectorAll('.modes label').forEach(l=>l.addEventListener('click',()=>{
   document.querySelectorAll('.modes label').forEach(x=>x.classList.remove('on')); l.classList.add('on');

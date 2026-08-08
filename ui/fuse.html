@@ -228,11 +228,13 @@ async function load(){
   const tc = await readC('termCount'); await sleep(80);
   const prc = await readC('proposalCount'); await sleep(80);
   const bn = await pub.getBlockNumber();
-  S.residuals=[]; for(let i=1;i<=Number(rc);i++){ const r=await readC('residuals',[BigInt(i)]); await sleep(60);
-    S.residuals.push({id:i,paramId:Number(r[0]),predicted:r[1],observed:r[2],evidence:r[3],at:Number(r[4]),consumed:r[5]}); }
-  S.params=[]; for(let i=1;i<=Number(pc);i++){ const p=await readC('params',[BigInt(i)]); await sleep(60);
+  S.residuals=[]; for(let i=1;i<=Number(rc);i++){ const r=await readC('residuals',[BigInt(i)]); await sleep(50);
+    S.residuals.push({id:i,paramId:Number(r[0]),predicted:r[1],observed:r[2],evidence:r[3],at:Number(r[4]),consumed:r[5]});
+    if(i%4===0 && S.params.length) render(); }   // paint every four residuals
+  S.params=[]; for(let i=1;i<=Number(pc);i++){ const p=await readC('params',[BigInt(i)]); await sleep(50);
     S.params.push({id:i,termId:Number(p[0]),name:p[1],value:p[2],min:p[3],max:p[4],mark:p[5],samples:Number(p[6])}); }
-  S.terms=[]; for(let i=1;i<=Number(tc);i++){ const t=await readC('terms',[BigInt(i)]); await sleep(60);
+  render();   // pipeline + selector usable as soon as parameters exist
+  S.terms=[]; for(let i=1;i<=Number(tc);i++){ const t=await readC('terms',[BigInt(i)]); await sleep(50);
     S.terms.push({id:i,name:t[0],theory:t[1],scope:t[2],cond:t[3],version:t[6]}); }
   S.props=[]; for(let i=1;i<=Number(prc);i++){ const p=await readC('proposals',[BigInt(i)]); await sleep(60);
     S.props.push({id:i,kind:p[0],diagnosis:p[1],name:p[2],theory:p[3],reasoning:p[7],ratified:p[8],refused:p[9],reason:p[10]}); }

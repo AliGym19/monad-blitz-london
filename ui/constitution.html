@@ -134,7 +134,7 @@
 <div class="wrap">
   <section id="s1">
     <div class="sechead"><span class="num">01</span><h2>The Constitution</h2><span class="eyebrow" id="markcount"></span></div>
-    <div id="articles"><div class="empty">Reading terms from the chain…</div></div>
+    <div id="articles"><div class="empty" id="skel">Reading the rate card from the chain…</div></div>
   </section>
 
   <section id="s2">
@@ -231,12 +231,18 @@ async function readState(){
   const prc = await readC('proposalCount'); await sleep(80);
   const bn = await pub.getBlockNumber();
   $('blocknum').textContent = 'block ' + bn.toString();
+  // chunked: paint each article as it lands rather than waiting for the whole set
   const terms=[], params=[], props=[];
-  for(let i=1;i<=Number(tc);i++){ terms.push(await readC('terms',[BigInt(i)])); await sleep(70); }
-  for(let i=1;i<=Number(pc);i++){ params.push(await readC('params',[BigInt(i)])); await sleep(70); }
-  for(let i=1;i<=Number(prc);i++){ props.push(await readC('proposals',[BigInt(i)])); await sleep(70); }
-  renderConstitution(terms, params);
-  renderProposals(props);
+  for(let i=1;i<=Number(pc);i++){ params.push(await readC('params',[BigInt(i)])); await sleep(60); }
+  for(let i=1;i<=Number(tc);i++){
+    terms.push(await readC('terms',[BigInt(i)])); await sleep(60);
+    renderConstitution(terms, params);           // progressive paint
+  }
+  for(let i=1;i<=Number(prc);i++){
+    props.push(await readC('proposals',[BigInt(i)])); await sleep(60);
+    renderProposals(props);
+  }
+  if(!Number(prc)) renderProposals([]);
   return bn;
 }
 
