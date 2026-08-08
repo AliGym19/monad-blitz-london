@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Newsreader:ital,opsz,wght@1,6..72,400..500&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root{ --paper:#FAFAF8; --ink:#141412; --meta:#8B8B85; --line:#E4E3DE;
-    --live:#1F3BD1; --refuse:#C8322B; --ok:#1E6B45;
+  :root{ --paper:#121110; --ink:#EDEAE3; --meta:#6F6E68; --line:#2A2926;
+    --live:#5B7CFA; --refuse:#E4574D; --ok:#4CAF7D;
     --disp:'Archivo',sans-serif; --serif:'Newsreader',serif; --mono:'Spline Sans Mono',monospace; }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--paper);color:var(--ink);font:16px/1.55 var(--disp);-webkit-font-smoothing:antialiased}
@@ -99,7 +99,7 @@
 <div class="page on" id="p1">
   <span class="eyebrow">01 · Standing and delegation</span>
   <h1>Author an objective.<br>Delegate the numbers.<br>Keep the pen.</h1>
-  <p class="lede">You are about to write a spending rule into an on-chain constitution, hand an AI agent bounded authority to execute under it, and watch it either obey, correct itself with cited evidence, or escalate back to your signature. <em>Two keys, two kinds of authority.</em></p>
+  <p class="lede">You are about to write a freelance rate card into an on-chain constitution, hand an AI agent bounded authority to commission and pay for work under it, and watch it either obey, correct itself with cited evidence, or escalate back to your signature. <em>Two keys, two kinds of authority.</em></p>
 
   <div class="panel">
     <h3>Sign in — two keys, two kinds of authority</h3>
@@ -142,11 +142,11 @@
     </div>
     <div id="newterm">
       <div class="grid2">
-        <div><label class="f">Name</label><input type="text" id="tname" placeholder="data-purchase" value="data-purchase" /></div>
-        <div><label class="f">Ceiling per action (MON)</label><input type="number" id="tceil" step="0.001" value="0.02" /></div>
+        <div><label class="f">Name</label><input type="text" id="tname" placeholder="task-rate" value="task-rate" /></div>
+        <div><label class="f">Rate ceiling per task (MON)</label><input type="number" id="tceil" step="0.001" value="0.02" /></div>
       </div>
       <div style="margin-top:12px"><label class="f">Written theory — why this cost exists</label>
-      <textarea id="ttheory">The agent may buy datasets from external endpoints. This cost exists because the objective values fresh ground truth over stale priors.</textarea></div>
+      <textarea id="ttheory">The agent commissions freelance tasks and pays contractors on completion. This cost exists because shipped work deserves a fair market rate — and because an unpriced rate card is a spreadsheet that cannot see the work.</textarea></div>
       <div class="grid3" style="margin-top:12px">
         <div><label class="f">Lower bound (MON)</label><input type="number" id="tmin" step="0.001" value="0.002" /></div>
         <div><label class="f">Upper bound (MON)</label><input type="number" id="tmax" step="0.001" value="0.06" /></div>
@@ -158,14 +158,20 @@
   <div class="panel">
     <h3>Dispatch — the fuse loops until stopped</h3>
     <div class="grid3">
-      <div><label class="f">Purchases per round</label><input type="number" id="npurch" min="2" max="8" value="6" /></div>
+      <div><label class="f">Tasks per round</label><input type="number" id="npurch" min="2" max="8" value="6" /></div>
       <div><label class="f">Stop-loss — session spend cap (MON)</label><input type="number" id="stoploss" step="0.01" value="0.15" /></div>
       <div><label class="f">Market conditions (relative to your ceiling)</label></div>
     </div>
     <div class="modes" id="modes">
-      <label class="on"><input type="radio" name="mode" value="calm" checked /><div class="mn">Calm</div><div class="md">quotes ~90% of ceiling — routine cited payments</div></label>
-      <label><input type="radio" name="mode" value="repriced" /><div class="mn">Repriced</div><div class="md">quotes ~40% over ceiling — declines, residuals, likely commit</div></label>
-      <label><input type="radio" name="mode" value="overhead" /><div class="mn">Overhead</div><div class="md">flat per-request cost — after a commit exists, escalates a missing word</div></label>
+      <label class="on"><input type="radio" name="mode" value="calm" checked /><div class="mn">Steady</div><div class="md">invoices ~90% of your rate — routine cited payouts</div></label>
+      <label><input type="radio" name="mode" value="repriced" /><div class="mn">Rates rising</div><div class="md">invoices ~40% over your rate — declines, residuals, the card corrects</div></label>
+      <label><input type="radio" name="mode" value="overhead" /><div class="mn">Platform fee</div><div class="md">flat per-task cost no rate absorbs — escalates a missing word</div></label>
+      <label><input type="radio" name="mode" value="manual" /><div class="mn">My actual work</div><div class="md">paste what each task really cost — the system prices your reality</div></label>
+    </div>
+    <div id="manualrow" style="display:none;margin-top:12px">
+      <label class="f">Actual cost per task, comma-separated (MON) — e.g. your real day</label>
+      <input type="text" id="actuals" placeholder="0.018, 0.021, 0.027, 0.028, 0.0285, 0.029" />
+      <div style="font:11px var(--mono);color:var(--meta);margin-top:6px">One round consumes these in order, then the loop stops. What your rate authorises gets paid; what exceeds it becomes a residual — your unpriced hours, finally on the record.</div>
     </div>
   </div>
 
@@ -333,7 +339,8 @@ async function refreshReuse(){
   $('reuse').onchange = ()=>{ $('newterm').style.display = $('reuse').value? 'none':''; };
 }
 document.querySelectorAll('.modes label').forEach(l=>l.addEventListener('click',()=>{
-  document.querySelectorAll('.modes label').forEach(x=>x.classList.remove('on')); l.classList.add('on'); }));
+  document.querySelectorAll('.modes label').forEach(x=>x.classList.remove('on')); l.classList.add('on');
+  $('manualrow').style.display = l.querySelector('input').value==='manual' ? '' : 'none'; }));
 $('back2').onclick=()=>page(1);
 
 // ── shared tx helper ────────────────────────────────────────────────
@@ -351,8 +358,13 @@ $('go2').onclick = async ()=>{
     const mode = document.querySelector('input[name=mode]:checked').value;
     const n = Math.min(8, Math.max(2, Number($('npurch').value)||6));
     const stopLoss = parseEther(String($('stoploss').value||'0.15'));
+    let actuals=null;
+    if(mode==='manual'){
+      actuals = ($('actuals').value||'').split(',').map(x=>x.trim()).filter(Boolean).map(x=>parseEther(x));
+      if(actuals.length<2) throw new Error('Manual mode needs at least two actual costs, comma-separated.');
+    }
     let termId, paramId;
-    if($('reuse').value){ [termId, paramId] = $('reuse').value.split(':').map(Number); run = { termId, paramId, mode, n, stopLoss, authored:false, log:[] }; }
+    if($('reuse').value){ [termId, paramId] = $('reuse').value.split(':').map(Number); run = { termId, paramId, mode, n, stopLoss, actuals, authored:false, log:[] }; }
     else {
       const name = $('tname').value.trim()||'unnamed-cost';
       const theory = $('ttheory').value.trim()||'No theory written.';
@@ -364,7 +376,7 @@ $('go2').onclick = async ()=>{
       const tc = Number(await pub.readContract({address:AO,abi,functionName:'termCount'}));
       const p = await send(authorClient,'authorParameter',[BigInt(tc),'price-ceiling-wei',ceil,min,max,$('tmark').checked]);
       const pc = Number(await pub.readContract({address:AO,abi,functionName:'paramCount'}));
-      run = { termId:tc, paramId:pc, mode, n, stopLoss, authored:true, authorTx:t.hash, paramTx:p.hash, log:[] };
+      run = { termId:tc, paramId:pc, mode, n, stopLoss, actuals, authored:true, authorTx:t.hash, paramTx:p.hash, log:[] };
     }
     page(3); doRun();
   } catch(err){ $('e-p2').textContent = err.shortMessage||err.message; }
@@ -376,7 +388,8 @@ const act = (cls,tag,html)=>{ $('actions').insertAdjacentHTML('beforeend',`<div 
   $('actions').parentElement.scrollTop=1e9; run.log.push({cls,tag,html}); };
 const think = html=>{ $('think').insertAdjacentHTML('beforeend',`<div class="st">${html}</div>`); $('think').parentElement.scrollTop=1e9; };
 
-function quoteFor(mode, i, ceiling, initialCeiling){
+function quoteFor(mode, i, ceiling, initialCeiling, actuals){
+  if(mode==='manual') return actuals[i];
   if(mode==='calm') return (ceiling*9n)/10n;
   if(mode==='repriced') return (ceiling*(138n+BigInt(i%5)))/100n;
   return ceiling + initialCeiling/5n; // overhead: flat absolute add-on
@@ -412,13 +425,15 @@ async function doRun(){
 
     loop: while(!stopRequested){
       R.round++; sess();
+      if(R.mode==='manual' && R.round>1){ R.outcome='stopped'; break loop; }
+      if(R.mode==='manual') R.n = R.actuals.length;
       think(`<b>— round ${R.round} · ${R.mode} market —</b>`);
       const residualIds=[]; const samples=[];
 
       for(let i=0;i<R.n;i++){
         if(stopRequested) break loop;
-        const q = quoteFor(R.mode,i,P.value,initialCeiling);
-        think(`quote ${i+1}/${R.n}: world asks <b>${fmt(q)}</b> · prior authorises ≤ ${fmt(P.value)}`);
+        const q = quoteFor(R.mode,i,P.value,initialCeiling,R.actuals);
+        think(`invoice ${i+1}/${R.n}: contractor invoices <b>${fmt(q)}</b> · rate card authorises ≤ ${fmt(P.value)}`);
         if(q<=P.value){
           if(R.spent + q > R.stopLoss){
             act('decline','stop-loss',`next payment ${fmt(q)} would breach the session cap ${fmt(R.stopLoss)} — the fuse stops itself`);
@@ -427,7 +442,7 @@ async function doRun(){
           }
           const {hash} = await send(sriClient,'citedPay',[BigInt(R.termId),BigInt(R.paramId),VENDOR,q]);
           R.paid++; R.spent+=q; sess();
-          act('pay','payment',`${fmt(q)} → vendor, citing Art. ${R.termId} · ${txa(hash)}`);
+          act('pay','payment',`${fmt(q)} → contractor, citing Art. ${R.termId} · ${txa(hash)}`);
           think(`amount ≤ ceiling → <span class="pass">cited payment authorised</span> · session ${fmt(R.spent)}/${fmt(R.stopLoss)}`);
         } else {
           const ev = keccak256(toHex(JSON.stringify({round:R.round,i,mode:R.mode,observed:q.toString(),predicted:P.value.toString()})));
@@ -435,7 +450,7 @@ async function doRun(){
           const rid = Number(await read('residualCount'));
           residualIds.push(BigInt(rid)); samples.push({predicted:P.value,observed:q});
           R.declined++; R.residualsTotal++;
-          act('decline','declined',`quote ${fmt(q)} exceeds authored ceiling — residual #${rid} recorded instead of breaching · ${txa(hash)}`);
+          act('decline','declined',`invoice ${fmt(q)} exceeds the authored rate — residual #${rid} recorded instead of breaching · ${txa(hash)}`);
           think(`amount > ceiling → <span class="fail">decline</span>; contradiction filed, not obeyed`);
         }
         await sleep(250);
@@ -458,13 +473,13 @@ async function doRun(){
             : `error is additive per event, not proportional — no value of this parameter can absorb it`);
           think(`<div class="verdict escalate">VERDICT · FORM-WRONG — a missing word. The fuse cannot author; escalating and halting.</div>`);
           const reasoning = keccak256(toHex(JSON.stringify({diagnosis:'FormWrong',policy:'spec/03 v1',cited:residualIds.map(String)})));
-          const {hash} = await send(sriClient,'openProposal',[0,1,'request-overhead',
-            'A cost pattern recurs that the existing parameter cannot absorb: after correction, the same-sign contradiction returned immediately. The vocabulary needs a term for it.',0,'',0n,reasoning,residualIds]);
+          const {hash} = await send(sriClient,'openProposal',[0,1,'platform-fee',
+            'A per-task cost recurs that no rate ceiling can absorb: after correction, the same-sign contradiction returned immediately. The rate card is missing a line item.',0,'',0n,reasoning,residualIds]);
           R.proposalId = Number(await read('proposalCount'));
           act('escalate','escalate',`proposal #${R.proposalId} opened · sits inert until the author signs · ${txa(hash)}`);
           R.escalation = { kind:'form',
-            summary:`form-wrong on §${R.termId}.${R.paramId}: after correcting to ${fmt(P.value)}, a same-sign contradiction returned within one round (median +${(Math.abs(c.median)*100).toFixed(1)}%, ${c.n} residuals) — no value of this parameter absorbs it. Proposed term: “request-overhead”.`,
-            pend:`The fuse corrected the number and the same contradiction came straight back — a cost exists that this parameter cannot express. It proposes a new term, “request-overhead”, citing ${c.n} residuals. A cost can be priced, or refused with a reason — never silently dropped.` };
+            summary:`form-wrong on §${R.termId}.${R.paramId}: after correcting to ${fmt(P.value)}, a same-sign contradiction returned within one round (median +${(Math.abs(c.median)*100).toFixed(1)}%, ${c.n} residuals) — no value of this parameter absorbs it. Proposed term: “platform-fee”.`,
+            pend:`The fuse corrected the number and the same contradiction came straight back — a cost exists that this parameter cannot express. It proposes a new line item, “platform-fee”, citing ${c.n} residuals. A cost can be priced, or refused with a reason — never silently dropped.` };
           R.outcome='escalated'; break loop;
         } else {
           const obs = samples.map(s=>Number(s.observed)).sort((a,b)=>a-b);
