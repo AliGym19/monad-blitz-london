@@ -306,13 +306,27 @@ $('go1').onclick = async ()=>{
   $('go1').disabled=false; $('go1').textContent='Enter the console';
 };
 
+// 429-aware read: the public RPC caps at 15 req/sec
+async function read(functionName, args){
+  for(let a=0;a<4;a++){
+    try{ return await pub.readContract({ address:AO, abi, functionName, args }); }
+    catch(e){ const m=String(e.message||e);
+      if(m.includes('429')||m.includes('15/sec')||m.includes('-32011')){ await sleep(600*(a+1)); continue; }
+      throw e; }
+  }
+  throw new Error('RPC rate-limited — close other AO tabs and try again.');
+}
+
 async function refreshReuse(){
-  const pc = Number(await pub.readContract({address:AO,abi,functionName:'paramCount'}));
+  const pc = Number(await read('paramCount'));
+  const termCache = {};
   const opts=[];
   for(let i=1;i<=pc;i++){
-    const p = await pub.readContract({address:AO,abi,functionName:'params',args:[BigInt(i)]});
-    const t = await pub.readContract({address:AO,abi,functionName:'terms',args:[p[0]]});
-    if(p[7] && p[1].includes('ceiling')||p[1].includes('wei')) opts.push({paramId:i,termId:Number(p[0]),label:`Art.${p[0]} ${t[0]} · §${p[0]}.${i} ${p[1]} · ${fmt(p[2])}`});
+    const p = await read('params',[BigInt(i)]); await sleep(90);
+    const tid = Number(p[0]);
+    if(!termCache[tid]){ termCache[tid] = await read('terms',[BigInt(tid)]); await sleep(90); }
+    const t = termCache[tid];
+    if(p[7] && (p[1].includes('ceiling')||p[1].includes('wei'))) opts.push({paramId:i,termId:tid,label:`Art.${tid} ${t[0]} · §${tid}.${i} ${p[1]} · ${fmt(p[2])}`});
   }
   if(opts.length){ $('reuserow').style.display='';
     $('reuse').innerHTML = '<option value="">— author a new term —</option>' + opts.map(o=>`<option value="${o.termId}:${o.paramId}">${esc(o.label)}</option>`).join(''); }
@@ -368,7 +382,7 @@ function quoteFor(mode, i, ceiling, initialCeiling){
   return ceiling + initialCeiling/5n; // overhead: flat absolute add-on
 }
 
-async function readParam(id){ const p = await pub.readContract({address:AO,abi,functionName:'params',args:[BigInt(id)]});
+async function readParam(id){ const p = await read('params',[BigInt(id)]);
   return { termId:Number(p[0]), name:p[1], value:BigInt(p[2]), min:BigInt(p[3]), max:BigInt(p[4]), mark:p[5], samples:Number(p[6]) }; }
 
 function calculus(samples){
@@ -418,7 +432,7 @@ async function doRun(){
         } else {
           const ev = keccak256(toHex(JSON.stringify({round:R.round,i,mode:R.mode,observed:q.toString(),predicted:P.value.toString()})));
           const {hash} = await send(sriClient,'submitResidual',[BigInt(R.paramId),P.value,q,ev]);
-          const rid = Number(await pub.readContract({address:AO,abi,functionName:'residualCount'}));
+          const rid = Number(await read('residualCount'));
           residualIds.push(BigInt(rid)); samples.push({predicted:P.value,observed:q});
           R.declined++; R.residualsTotal++;
           act('decline','declined',`quote ${fmt(q)} exceeds authored ceiling — residual #${rid} recorded instead of breaching · ${txa(hash)}`);
@@ -446,7 +460,7 @@ async function doRun(){
           const reasoning = keccak256(toHex(JSON.stringify({diagnosis:'FormWrong',policy:'spec/03 v1',cited:residualIds.map(String)})));
           const {hash} = await send(sriClient,'openProposal',[0,1,'request-overhead',
             'A cost pattern recurs that the existing parameter cannot absorb: after correction, the same-sign contradiction returned immediately. The vocabulary needs a term for it.',0,'',0n,reasoning,residualIds]);
-          R.proposalId = Number(await pub.readContract({address:AO,abi,functionName:'proposalCount'}));
+          R.proposalId = Number(await read('proposalCount'));
           act('escalate','escalate',`proposal #${R.proposalId} opened · sits inert until the author signs · ${txa(hash)}`);
           R.outcome='escalated'; break loop;
         } else {
@@ -458,7 +472,7 @@ async function doRun(){
             think(`<div class="verdict escalate">VERDICT · SCOPE-WRONG — widening scope is the author's call; escalating and halting.</div>`);
             const reasoning = keccak256(toHex(JSON.stringify({diagnosis:'ScopeWrong',clampNoted:true,cited:residualIds.map(String)})));
             const {hash} = await send(sriClient,'openProposal',[1,2,'','',0,'',BigInt(R.termId),reasoning,residualIds]);
-            R.proposalId = Number(await pub.readContract({address:AO,abi,functionName:'proposalCount'}));
+            R.proposalId = Number(await read('proposalCount'));
             act('escalate','escalate',`proposal #${R.proposalId} (amend scope) · ${txa(hash)}`);
             R.outcome='escalated'; break loop;
           }
