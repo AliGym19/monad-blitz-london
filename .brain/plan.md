@@ -6,7 +6,7 @@ Hackathon: monad-blitz-london. Submission freeze: today (2026-08-08), pitch ~5:4
 
 1. Fork of monad-blitz-london containing the project — ✓ done 2026-08-08: AliGym19/monad-blitz-london, history pushed, tracking set
 2. README with what it is, setup, how to run — ✓ done
-3. AO.sol deployed on Monad testnet **during the event** — ✓ done 2026-08-08: `0x471F9d86158e64d348c73Cf4f1C60E0FbcaFb27F`, seeded (3 terms / 4 params / marks [1,4] / 0.5 MON treasury). Deployer + SRI wallets in `.env`.
+3. AO.sol deployed on Monad testnet **during the event** — ✓ done 2026-08-08: `0xD12124f5128aa7696A8A4b785750A4C8819Ac991 (freelance genesis; first deploy 0x471F9d86…b27F abandoned)`, seeded (3 terms / 4 params / marks [1,4] / 0.5 MON treasury). Deployer + SRI wallets in `.env`.
 4. Live, publicly reachable web app — ✓ done 2026-08-08: https://ao-alitvjaber-1829s-projects.vercel.app (Vercel project `ao`, SSO protection disabled via API, verified 200 + renders chain state)
 5. Submitted at blitz.devnads.com before the freeze
 
