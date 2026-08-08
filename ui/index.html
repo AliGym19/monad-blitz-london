@@ -98,19 +98,19 @@
 <!-- ─── PAGE 1 · SIGN IN ─────────────────────────────────────────── -->
 <div class="page on" id="p1">
   <span class="eyebrow">01 · Standing and delegation</span>
-  <h1>Author an objective.<br>Delegate the numbers.<br>Keep the pen.</h1>
-  <p class="lede">You are about to write a freelance rate card into an on-chain constitution, hand an AI agent bounded authority to commission and pay for work under it, and watch it either obey, correct itself with cited evidence, or escalate back to your signature. <em>Two keys, two kinds of authority.</em></p>
+  <h1>Author an objective.<br>Provenance in the numbers.</h1>
+  <p class="lede">Write your rate card into a smart contract. An AI agent works under it — paying what you authorised, logging what you didn't, and asking you before any rule changes. <em>You keep the pen.</em></p>
 
   <div class="panel">
-    <h3>Sign in — two keys, two kinds of authority</h3>
+    <h3>Sign in</h3>
     <div class="grid2">
-      <div><label class="f">Author key — holds standing</label>
+      <div><label class="f">Your key — writes the rules</label>
         <input type="password" id="authorpk" placeholder="0x… author private key" autocomplete="off" /></div>
-      <div><label class="f">Fuse key — holds delegation</label>
+      <div><label class="f">Agent key — works under them</label>
         <input type="password" id="sripk" placeholder="0x… SRI private key" autocomplete="off" /></div>
     </div>
     <div class="frow" style="margin-top:12px">
-      <label class="marktoggle" style="cursor:pointer"><input type="checkbox" id="remember" /> remember on this device (testnet keys only — stored in this browser, plaintext)</label>
+      <label class="marktoggle" style="cursor:pointer"><input type="checkbox" id="remember" /> remember on this device (testnet keys only)</label>
       <button class="ghost" id="forget" style="display:none;padding:6px 10px;font-size:11px">forget</button>
     </div>
     <div class="err" id="e-author"></div><div class="okline" id="ok-author"></div><div class="okline" id="ok-sri"></div>
@@ -130,9 +130,9 @@
 
 <!-- ─── PAGE 2 · AUTHOR ──────────────────────────────────────────── -->
 <div class="page" id="p2">
-  <span class="eyebrow">02 · The manifest — vocabulary is legislative</span>
-  <h1>Write the prior.</h1>
-  <p class="lede">A term is a named cost with a written theory. The value you give it is a guess until the world measures it — mark it <em>⟂</em> and let the loop close the mark. Structured on purpose: instructions to a civil servant are written mandates, not prose.</p>
+  <span class="eyebrow">02 · Your rate card</span>
+  <h1>Set your rates.</h1>
+  <p class="lede">Name the cost, price it, set the limits. If the price is a guess, tick <em>⟂</em> — the work will measure it for real.</p>
 
   <div class="panel">
     <h3>Term</h3>
@@ -145,38 +145,38 @@
         <div><label class="f">Name</label><input type="text" id="tname" placeholder="task-rate" value="task-rate" /></div>
         <div><label class="f">Rate ceiling per task (MON)</label><input type="number" id="tceil" step="0.001" value="0.02" /></div>
       </div>
-      <div style="margin-top:12px"><label class="f">Written theory — why this cost exists</label>
+      <div style="margin-top:12px"><label class="f">Why this cost exists (one line)</label>
       <textarea id="ttheory">The agent commissions freelance tasks and pays contractors on completion. This cost exists because shipped work deserves a fair market rate — and because an unpriced rate card is a spreadsheet that cannot see the work.</textarea></div>
       <div class="grid3" style="margin-top:12px">
         <div><label class="f">Lower bound (MON)</label><input type="number" id="tmin" step="0.001" value="0.002" /></div>
         <div><label class="f">Upper bound (MON)</label><input type="number" id="tmax" step="0.001" value="0.06" /></div>
-        <div><label class="f">Honesty</label><div class="marktoggle"><input type="checkbox" id="tmark" checked /><span class="sym">⟂</span> guessed, never measured</div></div>
+        <div><label class="f">Honesty</label><div class="marktoggle"><input type="checkbox" id="tmark" checked /><span class="sym">⟂</span> this price is a guess</div></div>
       </div>
     </div>
   </div>
 
   <div class="panel">
-    <h3>Dispatch — the fuse loops until stopped</h3>
+    <h3>Send the agent to work</h3>
     <div class="grid3">
       <div><label class="f">Tasks per round</label><input type="number" id="npurch" min="2" max="8" value="6" /></div>
-      <div><label class="f">Stop-loss — session spend cap (MON)</label><input type="number" id="stoploss" step="0.01" value="0.15" /></div>
+      <div><label class="f">Spend cap (MON)</label><input type="number" id="stoploss" step="0.01" value="0.15" /></div>
       <div><label class="f">Market conditions (relative to your ceiling)</label></div>
     </div>
     <div class="modes" id="modes">
       <label class="on"><input type="radio" name="mode" value="calm" checked /><div class="mn">Steady</div><div class="md">invoices ~90% of your rate — routine cited payouts</div></label>
       <label><input type="radio" name="mode" value="repriced" /><div class="mn">Rates rising</div><div class="md">invoices ~40% over your rate — declines, residuals, the card corrects</div></label>
       <label><input type="radio" name="mode" value="overhead" /><div class="mn">Platform fee</div><div class="md">flat per-task cost no rate absorbs — escalates a missing word</div></label>
-      <label><input type="radio" name="mode" value="manual" /><div class="mn">My actual work</div><div class="md">paste what each task really cost — the system prices your reality</div></label>
+      <label><input type="radio" name="mode" value="manual" /><div class="mn">My actual work</div><div class="md">paste what each task really cost you</div></label>
     </div>
     <div id="manualrow" style="display:none;margin-top:12px">
       <label class="f">Actual cost per task, comma-separated (MON) — e.g. your real day</label>
       <input type="text" id="actuals" placeholder="0.018, 0.021, 0.027, 0.028, 0.0285, 0.029" />
-      <div style="font:11px var(--mono);color:var(--meta);margin-top:6px">One round consumes these in order, then the loop stops. What your rate authorises gets paid; what exceeds it becomes a residual — your unpriced hours, finally on the record.</div>
+      <div style="font:11px var(--mono);color:var(--meta);margin-top:6px">Runs once through your numbers. Within your rate: paid. Over it: logged as a residual — your unpaid hours, on the record.</div>
     </div>
   </div>
 
   <div class="nextrow">
-    <button id="go2">Author on-chain & dispatch</button>
+    <button id="go2">Write it on-chain & start</button>
     <button class="ghost" id="back2">← keys</button>
   </div>
   <div class="err" id="e-p2"></div>
@@ -184,39 +184,39 @@
 
 <!-- ─── PAGE 3 · RUN ─────────────────────────────────────────────── -->
 <div class="page" id="p3">
-  <span class="eyebrow">03 · The run — every action cites its rule</span>
-  <h1 id="runtitle">The fuse is working.</h1>
-  <p class="lede">Left: what it does — every transaction linked. Right: why — the written calculus, replayed as it reasons. <em>Nothing here is narrative; it is arithmetic with citations.</em></p>
+  <span class="eyebrow">03 · The run</span>
+  <h1 id="runtitle">The agent is working.</h1>
+  <p class="lede">Left: what it did — every transaction linked. Right: why — step by step. <em>Not a story. Arithmetic, with receipts.</em></p>
   <div class="nextrow" style="margin-bottom:14px">
-    <button class="ghost" id="stopbtn" style="border-color:var(--refuse);color:var(--refuse)">■ Stop the fuse</button>
+    <button class="ghost" id="stopbtn" style="border-color:var(--refuse);color:var(--refuse)">■ Stop</button>
     <span style="font:11px var(--mono);color:var(--meta);align-self:center" id="sessline">round 0 · spent 0 MON</span>
   </div>
   <div class="runwrap">
     <div class="col actions"><div class="colhead">Actions</div><div id="actions"></div><span class="cursor" id="cur1"></span></div>
-    <div class="col"><div class="colhead">Reasoning — the calculus</div><div class="think" id="think"></div><span class="cursor" id="cur2"></span></div>
+    <div class="col"><div class="colhead">Why</div><div class="think" id="think"></div><span class="cursor" id="cur2"></span></div>
   </div>
   <div class="nextrow"><button id="go3" disabled>Debrief →</button></div>
 </div>
 
 <!-- ─── PAGE 4 · DEBRIEF ─────────────────────────────────────────── -->
 <div class="page" id="p4">
-  <span class="eyebrow">04 · Debrief — the ledger diff, not a story</span>
-  <h1>What the chain now knows.</h1>
+  <span class="eyebrow">04 · Results</span>
+  <h1>The results.</h1>
   <p class="lede" id="dlede"></p>
   <div class="debrief">
     <div class="dcol"><h4 class="well">Went well</h4><div id="dwell"></div></div>
-    <div class="dcol"><h4 class="issues">Issues encountered</h4><div id="dissues"></div></div>
+    <div class="dcol"><h4 class="issues">Issues</h4><div id="dissues"></div></div>
   </div>
   <div class="panel" id="pendingpanel" style="display:none">
-    <h3 style="color:var(--refuse)">Awaiting your signature</h3>
+    <h3 style="color:var(--refuse)">Your call</h3>
     <p style="font-family:var(--serif);font-style:italic" id="pendtext"></p>
     <div class="nextrow"><button id="signbtn">Sign into law</button><button class="ghost" id="refusebtn">Refuse, with a reason</button></div>
     <div class="err" id="e-sign"></div>
   </div>
   <div class="nextrow">
-    <button id="loop">Continue the loop → new dispatch</button>
-    <a href="constitution.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">view the constitution</a>
-    <a href="fuse.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">interrogate the fuse</a>
+    <button id="loop">Run again →</button>
+    <a href="constitution.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">see the full rate card</a>
+    <a href="fuse.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">ask the agent why</a>
   </div>
 </div>
 
@@ -414,7 +414,7 @@ $('stopbtn').onclick=()=>{ stopRequested=true; $('stopbtn').textContent='stoppin
 
 async function doRun(){
   $('actions').innerHTML=''; $('think').innerHTML=''; $('go3').disabled=true;
-  stopRequested=false; $('stopbtn').textContent='■ Stop the fuse'; $('stopbtn').style.display='';
+  stopRequested=false; $('stopbtn').textContent='■ Stop'; $('stopbtn').style.display='';
   const R = run;
   R.paid=0; R.declined=0; R.residualsTotal=0; R.spent=0n; R.commits=[]; R.outcome='running'; R.round=0;
   const sess=()=>{ $('sessline').textContent=`round ${R.round} · spent ${fmt(R.spent)} · stop-loss ${fmt(R.stopLoss)}`; };
@@ -445,15 +445,15 @@ async function doRun(){
           const {hash} = await send(sriClient,'citedPay',[BigInt(R.termId),BigInt(R.paramId),VENDOR,q]);
           R.paid++; R.spent+=q; sess();
           act('pay','payment',`${fmt(q)} → contractor, citing Art. ${R.termId} · ${txa(hash)}`);
-          think(`amount ≤ ceiling → <span class="pass">cited payment authorised</span> · session ${fmt(R.spent)}/${fmt(R.stopLoss)}`);
+          think(`amount ≤ ceiling → <span class="pass">paid, within your rate</span> · session ${fmt(R.spent)}/${fmt(R.stopLoss)}`);
         } else {
           const ev = keccak256(toHex(JSON.stringify({round:R.round,i,mode:R.mode,observed:q.toString(),predicted:P.value.toString()})));
           const {hash} = await send(sriClient,'submitResidual',[BigInt(R.paramId),P.value,q,ev]);
           const rid = Number(await read('residualCount'));
           residualIds.push(BigInt(rid)); samples.push({predicted:P.value,observed:q});
           R.declined++; R.residualsTotal++;
-          act('decline','declined',`invoice ${fmt(q)} exceeds the authored rate — residual #${rid} recorded instead of breaching · ${txa(hash)}`);
-          think(`amount > ceiling → <span class="fail">decline</span>; contradiction filed, not obeyed`);
+          act('decline','declined',`invoice ${fmt(q)} exceeds the authored rate — residual #${rid} logged, not paid · ${txa(hash)}`);
+          think(`amount > ceiling → <span class="fail">decline</span>; over your rate — logged, not paid`);
         }
         await sleep(250);
       }
@@ -513,14 +513,14 @@ async function doRun(){
     }
 
     if(R.outcome==='running') R.outcome = stopRequested ? 'stopped' : R.outcome;
-    $('runtitle').textContent = R.outcome==='escalated' ? 'The fuse hit the edge of its authority.'
-      : R.outcome==='stoploss' ? 'The fuse stopped itself at the cap.' : 'The fuse has stopped.';
+    $('runtitle').textContent = R.outcome==='escalated' ? 'The agent hit its limit — your call now.'
+      : R.outcome==='stoploss' ? 'The agent stopped at your spend cap.' : 'The agent stopped.';
     $('stopbtn').style.display='none';
     $('go3').disabled=false; $('cur1')?.remove(); $('cur2')?.remove();
   } catch(err){
     act('revert','reverted',`${esc(err.shortMessage||err.message).slice(0,220)}`);
     think(`<div class="verdict escalate">the contract refused — read the revert above; bounds are law</div>`);
-    $('runtitle').textContent='The constitution pushed back.';
+    $('runtitle').textContent='The contract said no.';
     $('stopbtn').style.display='none'; $('go3').disabled=false;
   }
 }
