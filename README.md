@@ -1,137 +1,77 @@
-## Monad-flavored Foundry
+# AO — Authored Objective
 
-> [!NOTE]
-> In this Foundry template, the default chain is `monadTestnet`. If you wish to change it, change the network in `foundry.toml`
+An objective function that lives on-chain, where a machine can correct its
+numbers but only a human can change its words — and every correction is a
+diff anyone can read.
 
-<h4 align="center">
-  <a href="https://docs.monad.xyz">Monad Documentation</a> | <a href="https://book.getfoundry.sh/">Foundry Documentation</a> |
-   <a href="https://github.com/monad-developers/foundry-monad/issues">Report Issue</a>
-</h4>
+> A learned objective fails silently and can only be disliked; an authored
+> one fails at an address and can be contradicted. AO is that address,
+> deployed.
 
+## How it works
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+The constitutional split, enforced in code:
 
-Foundry consists of:
+- **Terms** are the vocabulary: human-named costs with a written theory of
+  why they exist (`data-purchase`, `retry-premium`). Only the author's
+  signature can create, amend, or refuse them. The legislative layer.
+- **Parameters** are the numbers inside terms (price ceilings, caps), each
+  with written bounds and optionally a ⟂ mark meaning "guessed, never
+  measured." A registered SRI agent can update these — but only within
+  bounds, only with ≥5 cited residuals, only for number-wrong diagnoses.
+  The civil-servant layer.
+- **Residuals** are the repair channel: anyone can submit "the prior said X,
+  the world said Y" with evidence. They accumulate, get diagnosed one of
+  four ways, and either close a ⟂ mark (routine) or open a proposal that
+  sits inert until the author signs (legislative).
+- **Cited payments** make it live: the agent spends real MON, but every
+  payment must reference the term authorising it and sit under the authored
+  ceiling, or the contract reverts.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat, and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions, and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose Solidity REPL.
+Specs live in [`docs/`](docs/): [term registry](docs/01-TERM-REGISTRY.md),
+[parameter scope](docs/02-PARAMETER-SCOPE.md),
+[residuals & escalation](docs/03-RESIDUALS-AND-ESCALATION.md).
 
-## Documentation
+## Setup
 
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
+Requires [Foundry](https://book.getfoundry.sh/).
 
 ```shell
 forge build
 ```
 
-### Test
-
-```shell
-forge test
-```
-
-### Format
-
-```shell
-forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-forge snapshot
-```
-
-### Anvil
-
-```shell
-anvil
-```
-
-### Deploy to Monad Testnet
-
-First, you need to create a keystore file. Do not forget to remember the password! You will need it to deploy your contract.
+Create a deployer keystore (once):
 
 ```shell
 cast wallet import monad-deployer --private-key $(cast wallet new | grep 'Private key:' | awk '{print $3}')
+cast wallet address --account monad-deployer   # fund this on Monad testnet
 ```
 
-After creating the keystore, you can read its address using:
+## Deploy & seed
+
+Deploys AO and seeds the initial authored manifest (3 terms, 4 parameters,
+2 open ⟂ marks) in one broadcast. The deployer becomes the author.
 
 ```shell
-cast wallet address --account monad-deployer
+export SRI_ADDRESS=0x...   # the agent wallet
+forge script script/Seed.s.sol:Seed \
+  --rpc-url https://testnet-rpc.monad.xyz \
+  --account monad-deployer --broadcast
 ```
 
-The command above will create a keystore file named `monad-deployer` in the `~/.foundry/keystores` directory.
-
-Then, you can deploy your contract to the Monad Testnet using the keystore file you created.
+Verify on [Monad explorer](https://testnet.monadexplorer.com):
 
 ```shell
-forge create src/Counter.sol:Counter --account monad-deployer --broadcast
-```
-
-### Verify Contract
-
-```shell
-forge verify-contract \
-  <contract_address> \
-  src/Counter.sol:Counter \
-  --chain 10143 \
-  --verifier sourcify \
+forge verify-contract <address> src/AO.sol:AO \
+  --chain 10143 --verifier sourcify \
   --verifier-url https://sourcify-api-monad.blockvision.org
 ```
 
-### Cast
-[Cast reference](https://book.getfoundry.sh/cast/)
-```shell
-cast <subcommand>
-```
+## Layout
 
-### Help
+- `src/AO.sol` — the contract: terms, parameters, residuals, cited payments
+- `script/Seed.s.sol` — deploy + seed the authored manifest
+- `docs/` — the three governing specs
 
-```shell
-forge --help
-anvil --help
-cast --help
-```
-
-
-## FAQ
-
-### Error: `Error: server returned an error response: error code -32603: Signer had insufficient balance`
-
-This error happens when you don't have enough balance to deploy your contract. You can check your balance with the following command:
-
-```shell
-cast wallet address --account monad-deployer
-```
-
-### I have constructor arguments, how do I deploy my contract?
-
-```shell
-forge create \
-  src/Counter.sol:Counter \
-  --account monad-deployer \
-  --broadcast \
-  --constructor-args <constructor_arguments>
-```
-
-### I have constructor arguments, how do I verify my contract?
-
-```shell
-forge verify-contract \
-  <contract_address> \
-  src/Counter.sol:Counter \
-  --chain 10143 \
-  --verifier sourcify \
-  --verifier-url https://sourcify-api-monad.blockvision.org \
-  --constructor-args <abi_encoded_constructor_arguments>
-```
-
-Please refer to the [Foundry Book](https://book.getfoundry.sh/) for more information.
+Built on the [foundry-monad](https://github.com/monad-developers/foundry-monad)
+template (Monad testnet, chain 10143, default RPC in `foundry.toml`).
