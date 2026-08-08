@@ -4,7 +4,7 @@ Hackathon: monad-blitz-london. Submission freeze: today (2026-08-08), pitch ~5:4
 
 ## Done looks like (eligibility bar — all five, or no pitch)
 
-1. Fork of monad-blitz-london containing the project — fork created (AliGym19/monad-blitz-london), event history merged, remote wired; awaiting Ali's `git push -u origin main` (fast-forward, no force)
+1. Fork of monad-blitz-london containing the project — ✓ done 2026-08-08: AliGym19/monad-blitz-london, history pushed, tracking set
 2. README with what it is, setup, how to run — ✓ done
 3. AO.sol deployed on Monad testnet **during the event** (redeploy on the day; timestamp matters)
 4. Live, publicly reachable web app (Vercel/Netlify), not localhost
