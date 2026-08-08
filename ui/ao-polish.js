@@ -21,7 +21,7 @@
     nodes = [];
     for(var i=0;i<n;i++){
       nodes.push({ x:Math.random()*W, y:Math.random()*H,
-        vx:(Math.random()-.5)*.16, vy:(Math.random()-.5)*.16,
+        vx:(Math.random()-.5)*.07, vy:(Math.random()-.5)*.07,
         r: Math.random()<.16 ? 2.2 : 1.2 + Math.random()*.8,
         blue: Math.random()<.22 });
     }
