@@ -101,10 +101,13 @@
 
   /* brand menu */
   .bm{position:relative;display:inline-block}
-  .bm>button{background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:baseline;gap:5px}
+  .bm>button{background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:baseline;gap:8px}
   .bm>button:focus-visible{outline:2px solid var(--live);outline-offset:3px}
-  .bm .caret{font-size:11px;color:var(--meta);transition:transform .18s;transform:translateY(-3px)}
-  .bm.open .caret{transform:translateY(-3px) rotate(180deg)}
+  .bm .caret{font-size:10px;color:var(--meta);transition:transform .18s;display:inline-block;transform:translateY(-2px)}
+  .bm.open .caret{transform:translateY(-2px) rotate(90deg)}
+  .bm>button .lbl{font-weight:400;font-size:13px;color:var(--meta);transition:color .15s}
+  .bm>button:hover .lbl,.bm.open .lbl{color:var(--ink)}
+  .bm>button:hover .caret,.bm.open .caret{color:var(--live)}
   .bmenu{position:absolute;top:calc(100% + 12px);left:-14px;min-width:250px;background:var(--paper);
     border:1px solid var(--ink);padding:6px;opacity:0;visibility:hidden;transform:translateY(-6px);
     transition:opacity .16s,transform .16s,visibility .16s;z-index:40}
@@ -122,7 +125,7 @@
 <body>
 
 <header><div class="wrap hrow">
-  <div class="brand"><div class="bm" id="bm"><button aria-haspopup="true" aria-expanded="false" id="bmbtn">AO<span class="perp">⟂</span><span class="caret">▾</span></button><div class="bmenu" role="menu"><a href="index.html"><span class="t">Console</span><span class="d">sign in · author · run · results</span></a><a href="constitution.html" class="here"><span class="t">Rate card</span><span class="d">the objective, as a document</span></a><a href="fuse.html"><span class="t">The agent</span><span class="d">its pipeline, and ask it why</span></a><a href="monad.html"><span class="t">Why Monad</span><span class="d">the substrate, not a feature</span></a></div></div> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Rate card</span></div>
+  <div class="brand"><div class="bm" id="bm"><button aria-haspopup="true" aria-expanded="false" id="bmbtn">AO<span class="perp">⟂</span><span class="caret">▸</span><span class="lbl">Rate card</span></button><div class="bmenu" role="menu"><a href="index.html"><span class="t">Console</span><span class="d">sign in · author · run · results</span></a><a href="constitution.html" class="here"><span class="t">Rate card</span><span class="d">the objective, as a document</span></a><a href="fuse.html"><span class="t">The agent</span><span class="d">its pipeline, and ask it why</span></a><a href="monad.html"><span class="t">Why Monad</span><span class="d">the substrate, not a feature</span></a></div></div></div>
   <div class="addr"><span class="pulse"></span><a id="addrlink" target="_blank" rel="noopener"></a> · Monad Testnet · <span id="blocknum">—</span></div>
 </div></header>
 
