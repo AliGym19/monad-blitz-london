@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AO · Authored Objective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Newsreader:ital,opsz,wght@1,6..72,400..500&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#FAFAF8; --ink:#141412; --meta:#8B8B85; --line:#E4E3DE;
+    --live:#1F3BD1; --refuse:#C8322B; --ok:#1E6B45;
+    --disp:'Archivo',sans-serif; --serif:'Newsreader',serif; --mono:'Spline Sans Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font:16px/1.55 var(--disp);font-variation-settings:'wdth' 100;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* header */
+  header{position:sticky;top:0;background:var(--paper);border-bottom:1px solid var(--ink);z-index:10}
+  .hrow{display:flex;align-items:baseline;justify-content:space-between;padding:14px 0;gap:16px;flex-wrap:wrap}
+  .brand{font-weight:900;letter-spacing:-.02em;font-size:22px}
+  .brand .perp{color:var(--live)}
+  .addr{font:12px var(--mono);color:var(--meta);word-break:break-all}
+  .addr a{text-decoration:none;border-bottom:1px solid var(--line)}
+  .pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:6px;animation:pl 2s infinite}
+  @keyframes pl{50%{opacity:.25}}
+
+  /* hero */
+  .hero{padding:64px 0 44px;border-bottom:1px solid var(--ink)}
+  .hero h1{font-weight:900;font-variation-settings:'wdth' 118;letter-spacing:-.03em;font-size:clamp(34px,6vw,72px);line-height:1.02;max-width:16ch}
+  .hero p{margin-top:18px;max-width:52ch;color:var(--meta);font-size:15px}
+  .hero p em{font-family:var(--serif);font-style:italic;color:var(--ink)}
+
+  /* numbered sections */
+  section{padding:44px 0;border-bottom:1px solid var(--line)}
+  .sechead{display:flex;align-items:baseline;gap:14px;margin-bottom:26px}
+  .num{font-weight:900;font-size:13px;color:var(--live)}
+  .sechead h2{font-weight:900;letter-spacing:-.01em;font-size:15px;text-transform:uppercase}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--meta)}
+
+  /* constitution */
+  .article{border-top:1px solid var(--ink);padding:20px 0 26px}
+  .art-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+  .art-name{font-weight:900;font-size:22px;letter-spacing:-.01em}
+  .art-meta{font:11px var(--mono);color:var(--meta)}
+  .scope{display:inline-block;border:1px solid var(--ink);padding:1px 8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-left:8px;vertical-align:middle}
+  .theory{font-family:var(--serif);font-style:italic;font-size:17px;line-height:1.6;margin:10px 0 4px;max-width:62ch}
+  .cond{font-size:12px;color:var(--meta);margin-top:4px}
+  .params{margin-top:14px;display:grid;gap:8px}
+  .param{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;border:1px solid var(--line);padding:10px 12px}
+  .param .pname{font:13px var(--mono)}
+  .param .pval{font:14px/1 var(--mono);font-weight:500;text-align:right}
+  .param .pbounds{font:10px var(--mono);color:var(--meta);grid-column:1/-1}
+  .mark{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--live);border:1.5px solid var(--live);width:26px;height:26px;display:grid;place-items:center;border-radius:50%}
+  .mark.closed{color:var(--meta);border-color:var(--line);text-decoration:line-through;position:relative}
+  .mark[title]{cursor:help}
+
+  /* ledger */
+  .ledger{display:grid;gap:0;font:13px var(--mono)}
+  .ev{display:grid;grid-template-columns:82px minmax(0,1fr);gap:14px;padding:10px 0;border-top:1px solid var(--line)}
+  .ev .tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding-top:2px}
+  .ev.pay .tag{color:var(--ok)} .ev.residual .tag{color:var(--meta)}
+  .ev.commit .tag{color:var(--live)} .ev.proposal .tag{color:var(--live)}
+  .ev.revert .tag,.ev.refused .tag{color:var(--refuse)}
+  .ev.ratified .tag{color:var(--ok)}
+  .ev .body{word-break:break-word}
+  .ev .tx{color:var(--meta);font-size:11px} .ev .tx a{text-decoration:none;border-bottom:1px solid var(--line)}
+  .empty{color:var(--meta);font-size:13px;padding:14px 0}
+
+  /* proposals */
+  .prop{border:1px solid var(--ink);padding:18px;margin-bottom:14px}
+  .prop .ptop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+  .prop .diag{font:11px var(--mono);color:var(--refuse);letter-spacing:.06em}
+  .prop .pn{font-weight:900;font-size:19px}
+  .prop .ptheory{font-family:var(--serif);font-style:italic;margin:8px 0;max-width:60ch}
+  .prop .pev{font:11px var(--mono);color:var(--meta)}
+  .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  button{font:700 13px var(--disp);letter-spacing:.02em;padding:10px 18px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer}
+  button.ghost{background:transparent;color:var(--ink)}
+  button:disabled{opacity:.4;cursor:default}
+  button:focus-visible{outline:2px solid var(--live);outline-offset:2px}
+  .stamp{font:900 12px var(--disp);letter-spacing:.14em;text-transform:uppercase;padding:3px 10px;border:1.5px solid}
+  .stamp.rat{color:var(--ok);border-color:var(--ok)}
+  .stamp.ref{color:var(--refuse);border-color:var(--refuse)}
+  .connect{font:12px var(--mono);color:var(--meta)}
+  .signin{border:1px solid var(--line);padding:14px;margin-top:6px}
+  .signrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .filebtn{font:700 12px var(--disp);padding:9px 14px;border:1.5px solid var(--ink);cursor:pointer;color:var(--ink)}
+  .ksname{font:11px var(--mono);color:var(--meta);max-width:18ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .signrow input[type=password]{font:13px var(--mono);padding:9px 10px;border:1px solid var(--line);background:transparent;color:var(--ink);outline:none;min-width:150px}
+  .signrow input[type=password]:focus{border-color:var(--ink)}
+  .signerr{display:block;margin-top:8px;font:11px var(--mono);color:var(--refuse)}
+
+  footer{padding:34px 0 60px;color:var(--meta);font-size:12px}
+  footer .big{font-weight:900;color:var(--ink);font-size:14px;margin-bottom:6px}
+  @media(max-width:640px){ .param{grid-template-columns:minmax(0,1fr) auto} .param .mark{order:-1} }
+  @media(prefers-reduced-motion:reduce){ .pulse{animation:none} }
+</style>
+</head>
+<body>
+
+<header><div class="wrap hrow">
+  <div class="brand"><a href="index.html" style="text-decoration:none">AO<span class="perp">⟂</span></a> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Constitution</span></div>
+  <div class="addr"><span class="pulse"></span><a id="addrlink" target="_blank" rel="noopener"></a> · Monad Testnet · <span id="blocknum">—</span></div>
+</div></header>
+
+<div class="wrap hero">
+  <h1>An objective that is wrong in public.</h1>
+  <p>An AI agent is spending real MON under this constitution. A machine may correct the <em>numbers</em>, within written bounds, with cited evidence. Only a human signature may change the <em>words</em>. Every correction below is a diff you can read — <em>有错可指</em>: has errors that can be pointed at.</p>
+</div>
+
+<div class="wrap">
+  <section id="s1">
+    <div class="sechead"><span class="num">01</span><h2>The Constitution</h2><span class="eyebrow" id="markcount"></span></div>
+    <div id="articles"><div class="empty">Reading terms from the chain…</div></div>
+  </section>
+
+  <section id="s2">
+    <div class="sechead"><span class="num">02</span><h2>The Ledger</h2><span class="eyebrow">every action cites its rule</span></div>
+    <div class="ledger" id="ledger"><div class="empty">No events yet. The agent has not moved.</div></div>
+  </section>
+
+  <section id="s3">
+    <div class="sechead"><span class="num">03</span><h2>The Signature Desk</h2><span class="eyebrow">the fuse does not hold the pen</span></div>
+    <div id="props"><div class="empty">No proposals. The vocabulary currently fits the world.</div></div>
+    <div class="connect" id="walletline">
+      <div class="signin" id="signin">
+        <span class="eyebrow" style="display:block;margin-bottom:8px">Author sign-in — standing is a file and a passphrase</span>
+        <div class="signrow">
+          <label class="filebtn"><input type="file" id="ksfile" accept="*/*" hidden />Choose keystore</label>
+          <span id="ksname" class="ksname">no file</span>
+          <input type="password" id="kspass" placeholder="passphrase" autocomplete="off" />
+          <button id="ksgo">Sign in</button>
+          <button class="ghost" id="connect" title="Use a browser wallet instead">MetaMask</button>
+        </div>
+        <span id="signerr" class="signerr"></span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer><div class="wrap">
+  <div class="big">Monad Blitz London · 2026</div>
+  Terms are legislative: author-signed only. Parameters are delegable: SRI-committed within bounds, ≥5 cited residuals. Reality votes on parameters; authors vote on terms.
+</div></footer>
+
+<script type="module">
+import { createPublicClient, createWalletClient, custom, http, defineChain, formatEther, parseAbi } from 'https://esm.sh/viem@2.21.19';
+
+// ── CONFIG ──────────────────────────────────────────────────────────
+const AO = '0x471F9d86158e64d348c73Cf4f1C60E0FbcaFb27F';
+const RPC = 'https://testnet-rpc.monad.xyz';
+const EXPLORER = 'https://testnet.monadexplorer.com';
+const LOG_WINDOW = 80000n; // ~6.6h of 0.3s blocks; widen if the demo state is older
+
+const chain = defineChain({ id:10143, name:'Monad Testnet',
+  nativeCurrency:{name:'MON',symbol:'MON',decimals:18},
+  rpcUrls:{default:{http:[RPC]}}, blockExplorers:{default:{name:'MonadExplorer',url:EXPLORER}} });
+
+const abi = parseAbi([
+  'function termCount() view returns (uint256)',
+  'function paramCount() view returns (uint256)',
+  'function proposalCount() view returns (uint256)',
+  'function terms(uint256) view returns (string name,string theory,uint8 scope,string conditionText,bool exists,uint64 authoredAt,uint32 version)',
+  'function params(uint256) view returns (uint256 termId,string name,int256 value,int256 minBound,int256 maxBound,bool bottomMark,uint32 samplesAbsorbed,bool exists)',
+  'function proposals(uint256) view returns (uint8 kind,uint8 diagnosis,string proposedName,string proposedTheory,uint8 proposedScope,string proposedCondition,uint256 targetTermId,bytes32 reasoningHash,bool ratified,bool refused,string refusalReason,uint64 openedAt)',
+  'function ratifyProposal(uint256) returns (uint256)',
+  'function refuseProposal(uint256,string)',
+  'event CitedPayment(uint256 indexed termId,uint256 indexed paramId,address indexed to,uint256 amount)',
+  'event ResidualSubmitted(uint256 indexed residualId,uint256 indexed paramId,int256 predicted,int256 observed)',
+  'event ParameterCommitted(uint256 indexed paramId,int256 oldValue,int256 newValue,bool markClosed,uint256[] citedResiduals,bytes32 reasoningHash)',
+  'event ProposalOpened(uint256 indexed proposalId,uint8 diagnosis,bytes32 reasoningHash)',
+  'event ProposalRatified(uint256 indexed proposalId,uint256 indexed resultTermId)',
+  'event ProposalRefused(uint256 indexed proposalId,string reason)',
+  'event TermAuthored(uint256 indexed termId,string name,uint8 scope,uint32 version)',
+  'event TermAmended(uint256 indexed termId,uint32 newVersion,string reason)',
+]);
+
+const pub = createPublicClient({ chain, transport: http() });
+const $ = id => document.getElementById(id);
+$('addrlink').textContent = AO.slice(0,10)+'…'+AO.slice(-6);
+$('addrlink').href = `${EXPLORER}/address/${AO}`;
+
+const fmt = wei => (+formatEther(BigInt(wei))).toFixed(4).replace(/0+$/,'').replace(/\.$/,'') + ' MON';
+const short = h => h.slice(0,10)+'…';
+const DIAG = ['NUMBER-WRONG','FORM-WRONG','SCOPE-WRONG','INSUFFICIENT'];
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ── STATE READ (reconstructed from contract, not events) ────────────
+async function readState(){
+  const [tc, pc, prc, bn] = await Promise.all([
+    pub.readContract({address:AO,abi,functionName:'termCount'}),
+    pub.readContract({address:AO,abi,functionName:'paramCount'}),
+    pub.readContract({address:AO,abi,functionName:'proposalCount'}),
+    pub.getBlockNumber(),
+  ]);
+  $('blocknum').textContent = 'block ' + bn.toString();
+  const terms = await Promise.all(Array.from({length:Number(tc)},(_,i)=>
+    pub.readContract({address:AO,abi,functionName:'terms',args:[BigInt(i+1)]})));
+  const params = await Promise.all(Array.from({length:Number(pc)},(_,i)=>
+    pub.readContract({address:AO,abi,functionName:'params',args:[BigInt(i+1)]})));
+  const props = await Promise.all(Array.from({length:Number(prc)},(_,i)=>
+    pub.readContract({address:AO,abi,functionName:'proposals',args:[BigInt(i+1)]})));
+  renderConstitution(terms, params);
+  renderProposals(props);
+  return bn;
+}
+
+function renderConstitution(terms, params){
+  let open = 0;
+  const html = terms.map((t,i)=>{
+    const tid = i+1;
+    const ps = params.map((p,j)=>({p,id:j+1})).filter(x=>Number(x.p[0])===tid);
+    const rows = ps.map(({p,id})=>{
+      const [,name,value,min,max,mark,samples] = p;
+      if(mark) open++;
+      const isWei = name.includes('wei');
+      const v = isWei ? fmt(value) : value.toString();
+      const bounds = `written scope [${isWei?fmt(min):min} … ${isWei?fmt(max):max}] · ${samples} samples absorbed`;
+      return `<div class="param">
+        <span class="pname">§${tid}.${id} ${esc(name)}</span>
+        <span class="pval">${v}</span>
+        <span class="mark ${mark?'':'closed'}" title="${mark?'⟂ open — authored as a guess, never measured':'mark closed — measured, no longer a guess'}">⟂</span>
+        <span class="pbounds">${bounds}</span>
+      </div>`;
+    }).join('');
+    const [name,theory,scope,cond,,,version] = t;
+    return `<div class="article">
+      <div class="art-top">
+        <div><span class="art-name">Art. ${tid} · ${esc(name)}</span><span class="scope">${scope===0?'shared':'conditional'}</span></div>
+        <span class="art-meta">v${version}</span>
+      </div>
+      <p class="theory">${esc(theory)}</p>
+      ${scope===1?`<p class="cond">Condition: ${esc(cond)}</p>`:''}
+      <div class="params">${rows}</div>
+    </div>`;
+  }).join('');
+  $('articles').innerHTML = html || '<div class="empty">No terms authored yet.</div>';
+  $('markcount').textContent = open ? `${open} ⟂ open — guessed, not yet measured` : 'all marks closed';
+}
+
+// ── LEDGER (events, newest first) ───────────────────────────────────
+async function readLedger(bn){
+  const from = bn > LOG_WINDOW ? bn - LOG_WINDOW : 0n;
+  let logs = [];
+  try { logs = await pub.getLogs({ address: AO, fromBlock: from, toBlock: bn }); }
+  catch { try { logs = await pub.getLogs({ address: AO, fromBlock: bn - 8000n, toBlock: bn }); } catch {} }
+  const parsed = [];
+  for (const lg of logs) {
+    try {
+      const ev = (await import('https://esm.sh/viem@2.21.19')).decodeEventLog({ abi, data: lg.data, topics: lg.topics });
+      parsed.push({ ev, tx: lg.transactionHash, block: lg.blockNumber });
+    } catch {}
+  }
+  parsed.reverse();
+  if(!parsed.length) return;
+  $('ledger').innerHTML = parsed.map(({ev,tx})=>{
+    const a = ev.args; let cls='', tag='', body='';
+    switch(ev.eventName){
+      case 'CitedPayment': cls='pay';tag='payment';
+        body=`${fmt(a.amount)} → ${short(a.to)} · citing Art. ${a.termId} under §${a.termId}.${a.paramId}`; break;
+      case 'ResidualSubmitted': cls='residual';tag='residual';
+        body=`#${a.residualId} on §·${a.paramId}: prior said ${fmt(a.predicted)}, world said ${fmt(a.observed)}`; break;
+      case 'ParameterCommitted': cls='commit';tag='commit';
+        body=`§·${a.paramId}: ${fmt(a.oldValue)} → ${fmt(a.newValue)} · ${a.citedResiduals.length} residuals cited${a.markClosed?' · ⟂ MARK CLOSED':''} · reasoning ${short(a.reasoningHash)}`; break;
+      case 'ProposalOpened': cls='proposal';tag='escalate';
+        body=`Proposal #${a.proposalId} · ${DIAG[a.diagnosis]} · the fuse cannot commit this — awaiting the author`; break;
+      case 'ProposalRatified': cls='ratified';tag='ratified';
+        body=`Proposal #${a.proposalId} signed → term ${a.resultTermId}. The vocabulary grew by one word.`; break;
+      case 'ProposalRefused': cls='refused';tag='refused';
+        body=`Proposal #${a.proposalId} refused, with a reason: “${esc(a.reason)}”`; break;
+      case 'TermAuthored': cls='commit';tag='authored';
+        body=`Art. ${a.termId} · “${esc(a.name)}” enters the constitution (v${a.version})`; break;
+      case 'TermAmended': cls='commit';tag='amended';
+        body=`Art. ${a.termId} → v${a.newVersion}: ${esc(a.reason)}`; break;
+      default: return '';
+    }
+    return `<div class="ev ${cls}"><span class="tag">${tag}</span><span class="body">${body}<br><span class="tx"><a href="${EXPLORER}/tx/${tx}" target="_blank" rel="noopener">${short(tx)}</a></span></span></div>`;
+  }).join('');
+}
+
+// ── SIGNATURE DESK ──────────────────────────────────────────────────
+let wallet = null, account = null;
+function renderProposals(props){
+  if(!props.length){ $('props').innerHTML = '<div class="empty">No proposals. The vocabulary currently fits the world.</div>'; return; }
+  $('props').innerHTML = props.map((p,i)=>{
+    const id=i+1; const [kind,diag,name,theory,scope,cond,target,rh,rat,ref,refReason] = p;
+    const state = rat?'<span class="stamp rat">Ratified</span>':ref?'<span class="stamp ref">Refused</span>':'';
+    const act = (!rat&&!ref)?`<div class="actions">
+        <button data-act="ratify" data-id="${id}">Sign into law</button>
+        <button class="ghost" data-act="refuse" data-id="${id}">Refuse, with a reason</button>
+      </div>`:'';
+    const reflect = ref?`<p class="pev">Reason: “${esc(refReason)}”</p>`:'';
+    return `<div class="prop">
+      <div class="ptop"><span class="pn">${kind===0?'Add term':'Amend scope'} · ${esc(name)||('term '+target)}</span>
+        <span class="diag">${DIAG[diag]}</span>${state}</div>
+      <p class="ptheory">${esc(theory)}</p>
+      ${scope===1?`<p class="pev">Proposed condition: ${esc(cond)}</p>`:''}
+      <p class="pev">Reasoning ${short(rh)} · opened by the SRI · sits inert until signed</p>
+      ${reflect}${act}
+    </div>`;
+  }).join('');
+  document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click', onAction));
+}
+
+function signedIn(addr){
+  account = addr;
+  $('walletline').innerHTML = `Signed in as <b>${short(addr)}</b> — this key holds standing.`;
+}
+
+// Primary: the keystore itself. Decrypt in-browser, sign over RPC. No extension.
+let ksJson = null;
+$('ksfile').addEventListener('change', async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  ksJson = await f.text();
+  $('ksname').textContent = f.name;
+  $('signerr').textContent = '';
+});
+$('ksgo').addEventListener('click', async ()=>{
+  $('signerr').textContent = '';
+  if(!ksJson){ $('signerr').textContent = 'Choose the keystore file first (e.g. ~/.foundry/keystores/monad-deployer).'; return; }
+  const pass = $('kspass').value;
+  if(!pass){ $('signerr').textContent = 'Passphrase required.'; return; }
+  $('ksgo').disabled = true; $('ksgo').textContent = 'Decrypting…';
+  try{
+    const { Wallet } = await import('https://esm.sh/ethers@6.13.4');
+    const w = await Wallet.fromEncryptedJson(ksJson, pass);
+    const { privateKeyToAccount } = await import('https://esm.sh/viem@2.21.19/accounts');
+    const acct = privateKeyToAccount(w.privateKey);
+    wallet = createWalletClient({ chain, transport: http(), account: acct });
+    signedIn(acct.address);
+  } catch(err){
+    $('signerr').textContent = 'Decryption failed — wrong passphrase or not a keystore JSON.';
+    $('ksgo').disabled = false; $('ksgo').textContent = 'Sign in';
+  }
+});
+$('kspass').addEventListener('keydown', e=>{ if(e.key==='Enter') $('ksgo').click(); });
+
+// Secondary: a browser wallet, if one exists.
+async function connect(){
+  if(!window.ethereum){ $('signerr').textContent = 'No browser wallet detected — use the keystore sign-in on the left.'; return; }
+  try { await window.ethereum.request({ method:'wallet_addEthereumChain', params:[{
+    chainId:'0x279F', chainName:'Monad Testnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18},
+    rpcUrls:[RPC], blockExplorerUrls:[EXPLORER] }] }); } catch {}
+  const [acct] = await window.ethereum.request({ method:'eth_requestAccounts' });
+  wallet = createWalletClient({ chain, transport: custom(window.ethereum), account: acct });
+  signedIn(acct);
+}
+$('connect').addEventListener('click', connect);
+
+async function onAction(e){
+  const id = BigInt(e.target.dataset.id); const act = e.target.dataset.act;
+  if(!wallet){ $('signerr').textContent = 'Sign in first — the signature desk needs the author key.'; $('kspass').focus(); return; }
+  e.target.disabled = true;
+  try{
+    if(act==='ratify'){
+      const hash = await wallet.writeContract({ address:AO, abi, functionName:'ratifyProposal', args:[id] });
+      await pub.waitForTransactionReceipt({ hash });
+    } else {
+      const reason = prompt('A cost can be priced, or refused with a reason. The reason:');
+      if(!reason){ e.target.disabled=false; return; }
+      const hash = await wallet.writeContract({ address:AO, abi, functionName:'refuseProposal', args:[id, reason] });
+      await pub.waitForTransactionReceipt({ hash });
+    }
+    tick();
+  } catch(err){ alert('Transaction failed: ' + (err.shortMessage||err.message)); e.target.disabled=false; }
+}
+
+// ── POLL ────────────────────────────────────────────────────────────
+async function tick(){
+  try { const bn = await readState(); await readLedger(bn); }
+  catch(err){ console.error(err); }
+}
+tick(); setInterval(tick, 3000);
+</script>
+</body>
+</html>
