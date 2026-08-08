@@ -89,7 +89,7 @@
 <body>
 
 <header><div class="wrap hrow">
-  <div class="brand"><a href="/">AO<span class="perp">⟂</span></a> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Console</span></div>
+  <div class="brand"><a href="index.html">AO<span class="perp">⟂</span></a> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Console</span></div>
   <div class="steps" id="steps">01 SIGN IN · 02 AUTHOR · 03 RUN · 04 DEBRIEF</div>
 </div></header>
 
@@ -209,16 +209,25 @@
   </div>
   <div class="nextrow">
     <button id="loop">Continue the loop → new dispatch</button>
-    <a href="/" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">view the constitution</a>
-    <a href="/fuse.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">interrogate the fuse</a>
+    <a href="index.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">view the constitution</a>
+    <a href="fuse.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">interrogate the fuse</a>
   </div>
 </div>
 
 </div>
 
+<script>
+// watchdog: if the module script fails to load (network/import error), say so instead of dead buttons
+window.__aoReady=false;
+window.addEventListener('error',e=>{ if(window.__aoReady) return;
+  const el=document.getElementById('e-p1'); if(el) el.textContent='Page script failed to load: '+(e.message||'import error')+' — check network / hard-reload (Cmd+Shift+R).'; },true);
+setTimeout(()=>{ if(!window.__aoReady){ const el=document.getElementById('e-p1');
+  if(el&&!el.textContent) el.textContent='Page script has not loaded (esm.sh import may be blocked on this network). Hard-reload; if it persists, try phone hotspot.'; }},6000);
+</script>
 <script type="module">
 import { createPublicClient, createWalletClient, http, defineChain, formatEther, parseEther, parseAbi, keccak256, toHex } from 'https://esm.sh/viem@2.21.19';
 import { privateKeyToAccount } from 'https://esm.sh/viem@2.21.19/accounts';
+window.__aoReady=true;
 
 const AO = '0x471F9d86158e64d348c73Cf4f1C60E0FbcaFb27F';
 const RPC = 'https://testnet-rpc.monad.xyz';
@@ -430,11 +439,13 @@ async function doRun(){
         if(!consistent){
           think(`<div class="verdict">WAIT — below the grading; the fuse declines to conclude and keeps working</div>`);
         } else if(P.samples>0 || R.mode==='overhead'){
-          think(`error is additive per event, not proportional — no value of this parameter can absorb it`);
+          think(P.samples>0
+            ? `same-sign cluster recurring immediately after a fresh commit — the corrected value failed the same way; no value of this parameter can absorb it (recurrence rule, spec/03)`
+            : `error is additive per event, not proportional — no value of this parameter can absorb it`);
           think(`<div class="verdict escalate">VERDICT · FORM-WRONG — a missing word. The fuse cannot author; escalating and halting.</div>`);
           const reasoning = keccak256(toHex(JSON.stringify({diagnosis:'FormWrong',policy:'spec/03 v1',cited:residualIds.map(String)})));
           const {hash} = await send(sriClient,'openProposal',[0,1,'request-overhead',
-            'Every action carries a fixed per-request cost independent of price. The residuals are additive per event; no proportional ceiling can absorb them.',0,'',0n,reasoning,residualIds]);
+            'A cost pattern recurs that the existing parameter cannot absorb: after correction, the same-sign contradiction returned immediately. The vocabulary needs a term for it.',0,'',0n,reasoning,residualIds]);
           R.proposalId = Number(await pub.readContract({address:AO,abi,functionName:'proposalCount'}));
           act('escalate','escalate',`proposal #${R.proposalId} opened · sits inert until the author signs · ${txa(hash)}`);
           R.outcome='escalated'; break loop;
