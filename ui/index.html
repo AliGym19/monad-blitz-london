@@ -84,12 +84,31 @@
   .dempty{font:13px var(--mono);color:var(--meta);padding:8px 0}
   .nextrow{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
   @media(max-width:820px){ .runwrap,.debrief,.grid2,.grid3{grid-template-columns:1fr} .col.actions{border-right:none;border-bottom:1px solid var(--line)} }
+
+  /* brand menu */
+  .bm{position:relative;display:inline-block}
+  .bm>button{background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:baseline;gap:5px}
+  .bm>button:focus-visible{outline:2px solid var(--live);outline-offset:3px}
+  .bm .caret{font-size:11px;color:var(--meta);transition:transform .18s;transform:translateY(-3px)}
+  .bm.open .caret{transform:translateY(-3px) rotate(180deg)}
+  .bmenu{position:absolute;top:calc(100% + 12px);left:-14px;min-width:250px;background:var(--paper);
+    border:1px solid var(--ink);padding:6px;opacity:0;visibility:hidden;transform:translateY(-6px);
+    transition:opacity .16s,transform .16s,visibility .16s;z-index:40}
+  .bm.open .bmenu{opacity:1;visibility:visible;transform:translateY(0)}
+  .bmenu a{display:block;padding:10px 12px;text-decoration:none;border-bottom:1px solid var(--line)}
+  .bmenu a:last-child{border-bottom:none}
+  .bmenu a:hover,.bmenu a:focus-visible{background:var(--line);outline:none}
+  .bmenu .t{font:700 13px var(--disp);letter-spacing:-.01em;display:flex;justify-content:space-between;gap:10px}
+  .bmenu .d{font:11px var(--mono);color:var(--meta);margin-top:2px}
+  .bmenu a.here .t{color:var(--live)}
+  .bmenu a.here .t:after{content:"you are here";font:10px var(--mono);color:var(--meta);font-weight:400;letter-spacing:.06em}
+  @media(prefers-reduced-motion:reduce){ .bmenu,.bm .caret{transition:none} }
 </style>
 </head>
 <body>
 
 <header><div class="wrap hrow">
-  <div class="brand"><a href="index.html">AO<span class="perp">⟂</span></a> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Console</span></div>
+  <div class="brand"><div class="bm" id="bm"><button aria-haspopup="true" aria-expanded="false" id="bmbtn">AO<span class="perp">⟂</span><span class="caret">▾</span></button><div class="bmenu" role="menu"><a href="index.html" class="here"><span class="t">Console</span><span class="d">sign in · author · run · results</span></a><a href="constitution.html"><span class="t">Rate card</span><span class="d">the objective, as a document</span></a><a href="fuse.html"><span class="t">The agent</span><span class="d">its pipeline, and ask it why</span></a><a href="monad.html"><span class="t">Why Monad</span><span class="d">the substrate, not a feature</span></a><a href="deck.html"><span class="t">Deck</span><span class="d">the argument in eleven slides</span></a></div></div> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Console</span></div>
   <div class="steps" id="steps">01 SIGN IN · 02 AUTHOR · 03 RUN · 04 DEBRIEF</div>
 </div></header>
 
@@ -99,8 +118,7 @@
 <div class="page on" id="p1">
   <span class="eyebrow">01 · Standing and delegation</span>
   <h1>Author an objective.<br>Provenance in the numbers.</h1>
-  <p class="lede">Write your rate card into a smart contract. An AI agent works under it — paying what you authorised, logging what you didn't, and asking you before any rule changes. <em>You keep the pen.</em></p>
-
+  
   <div class="panel">
     <h3>Sign in</h3>
     <div class="grid2">
@@ -217,6 +235,7 @@
     <button id="loop">Run again →</button>
     <a href="constitution.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">see the full rate card</a>
     <a href="fuse.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">ask the agent why</a>
+    <a href="monad.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">why Monad</a>
   </div>
 </div>
 
@@ -480,8 +499,8 @@ async function doRun(){
           R.proposalId = Number(await read('proposalCount'));
           act('escalate','escalate',`proposal #${R.proposalId} opened · sits inert until the author signs · ${txa(hash)}`);
           R.escalation = { kind:'form',
-            summary:`form-wrong on §${R.termId}.${R.paramId}: after correcting to ${fmt(P.value)}, a same-sign contradiction returned within one round (median +${(Math.abs(c.median)*100).toFixed(1)}%, ${c.n} residuals) — no value of this parameter absorbs it. Proposed term: “platform-fee”.`,
-            pend:`The fuse corrected the number and the same contradiction came straight back — a cost exists that this parameter cannot express. It proposes a new line item, “platform-fee”, citing ${c.n} residuals. A cost can be priced, or refused with a reason — never silently dropped.` };
+            summary:`form-wrong on §${R.termId}.${R.paramId}: at the current rate ${fmt(P.value)}, a consistent contradiction persists (median +${(Math.abs(c.median)*100).toFixed(1)}%, ${c.n} residuals)${R.commits.length?' — and it returned immediately after this session corrected the rate':' — this parameter has already absorbed evidence before'}. No value of it absorbs this. Proposed line item: “platform-fee”.`,
+            pend:`The agent has hit a cost this rate cannot express — correcting the number does not remove it. It proposes a new line item, “platform-fee”, citing ${c.n} residuals. A cost can be priced, or refused with a reason — never silently dropped.` };
           R.outcome='escalated'; break loop;
         } else {
           const obs = samples.map(s=>Number(s.observed)).sort((a,b)=>a-b);
@@ -557,6 +576,17 @@ $('refusebtn').onclick = async ()=>{ const reason = prompt('The reason:'); if(!r
     $('signbtn').style.display='none'; $('refusebtn').style.display='none';
   }catch(err){ $('e-sign').textContent = err.shortMessage||err.message; } };
 $('loop').onclick = async ()=>{ await refreshReuse(); page(2); };
+</script>
+
+<script>
+(function(){
+  var bm=document.getElementById('bm'); if(!bm) return;
+  var btn=document.getElementById('bmbtn');
+  function set(o){ bm.classList.toggle('open',o); btn.setAttribute('aria-expanded',o?'true':'false'); }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); set(!bm.classList.contains('open')); });
+  document.addEventListener('click',function(e){ if(!bm.contains(e.target)) set(false); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') set(false); });
+})();
 </script>
 </body>
 </html>

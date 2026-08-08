@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Monad · Authored Objective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Newsreader:ital,opsz,wght@1,6..72,400..500&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --paper:#121110; --ink:#EDEAE3; --meta:#6F6E68; --line:#2A2926;
+    --live:#5B7CFA; --refuse:#E4574D; --ok:#4CAF7D;
+    --disp:'Archivo',sans-serif; --serif:'Newsreader',serif; --mono:'Spline Sans Mono',monospace; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font:16px/1.55 var(--disp);-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  header{position:sticky;top:0;background:var(--paper);border-bottom:1px solid var(--ink);z-index:10}
+  .hrow{display:flex;align-items:baseline;justify-content:space-between;padding:14px 0;gap:16px;flex-wrap:wrap}
+  .brand{font-weight:900;letter-spacing:-.02em;font-size:22px}
+  .brand .perp{color:var(--live)}
+  .brand a{text-decoration:none}
+  .navl{font:12px var(--mono);color:var(--meta)}
+  .navl a{text-decoration:none;border-bottom:1px solid var(--line);margin-left:14px}
+  .hero{padding:56px 0 40px;border-bottom:1px solid var(--ink)}
+  .hero h1{font-weight:900;font-variation-settings:'wdth' 118;letter-spacing:-.03em;font-size:clamp(30px,5.4vw,62px);line-height:1.04;max-width:17ch}
+  .hero p{margin-top:16px;max-width:58ch;color:var(--meta);font-size:15px}
+  .hero p em{font-family:var(--serif);font-style:italic;color:var(--ink)}
+  .addrbar{margin-top:22px;border:1px solid var(--line);padding:14px;font:12px var(--mono);display:flex;gap:22px;flex-wrap:wrap}
+  .addrbar b{font-weight:500;color:var(--live)}
+  .addrbar a{text-decoration:none;border-bottom:1px solid var(--line)}
+  section{padding:40px 0;border-bottom:1px solid var(--line)}
+  .sechead{display:flex;align-items:baseline;gap:14px;margin-bottom:22px}
+  .num{font-weight:900;font-size:13px;color:var(--live)}
+  .sechead h2{font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:-.01em}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--meta)}
+  .point{border-top:1px solid var(--line);padding:22px 0;display:grid;grid-template-columns:44px minmax(0,1fr);gap:18px}
+  .point .pn{font-weight:900;font-size:22px;color:var(--live);line-height:1}
+  .point h3{font-weight:900;font-size:20px;letter-spacing:-.01em;margin-bottom:8px}
+  .point p{max-width:64ch;color:var(--ink);font-size:15px}
+  .point p + p{margin-top:8px}
+  .point .loop{margin-top:12px;border-left:2px solid var(--live);padding:8px 0 8px 14px;font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink)}
+  .point .loop b{font-family:var(--disp);font-style:normal;font-weight:900;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--live);display:block;margin-bottom:3px}
+  code{font:13px var(--mono);color:var(--live)}
+  .stack{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:1px solid var(--line)}
+  .st{padding:16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .st:nth-child(2n){border-right:none}
+  .st .k{font:11px var(--mono);color:var(--meta);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+  .st .v{font:13px var(--mono);word-break:break-word}
+  .honest{border:1.5px solid var(--live);padding:22px}
+  .honest h3{font-weight:900;font-size:15px;text-transform:uppercase;margin-bottom:12px;color:var(--live)}
+  .honest p{font-family:var(--serif);font-style:italic;font-size:17px;line-height:1.6;max-width:62ch}
+  .honest p + p{margin-top:10px}
+  footer{padding:34px 0 60px;color:var(--meta);font-size:12px}
+  @media(max-width:760px){ .stack{grid-template-columns:1fr} .st{border-right:none} .point{grid-template-columns:1fr;gap:6px} }
+
+  /* brand menu */
+  .bm{position:relative;display:inline-block}
+  .bm>button{background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:baseline;gap:5px}
+  .bm>button:focus-visible{outline:2px solid var(--live);outline-offset:3px}
+  .bm .caret{font-size:11px;color:var(--meta);transition:transform .18s;transform:translateY(-3px)}
+  .bm.open .caret{transform:translateY(-3px) rotate(180deg)}
+  .bmenu{position:absolute;top:calc(100% + 12px);left:-14px;min-width:250px;background:var(--paper);
+    border:1px solid var(--ink);padding:6px;opacity:0;visibility:hidden;transform:translateY(-6px);
+    transition:opacity .16s,transform .16s,visibility .16s;z-index:40}
+  .bm.open .bmenu{opacity:1;visibility:visible;transform:translateY(0)}
+  .bmenu a{display:block;padding:10px 12px;text-decoration:none;border-bottom:1px solid var(--line)}
+  .bmenu a:last-child{border-bottom:none}
+  .bmenu a:hover,.bmenu a:focus-visible{background:var(--line);outline:none}
+  .bmenu .t{font:700 13px var(--disp);letter-spacing:-.01em;display:flex;justify-content:space-between;gap:10px}
+  .bmenu .d{font:11px var(--mono);color:var(--meta);margin-top:2px}
+  .bmenu a.here .t{color:var(--live)}
+  .bmenu a.here .t:after{content:"you are here";font:10px var(--mono);color:var(--meta);font-weight:400;letter-spacing:.06em}
+  @media(prefers-reduced-motion:reduce){ .bmenu,.bm .caret{transition:none} }
+</style>
+</head>
+<body>
+
+<header><div class="wrap hrow">
+  <div class="brand"><div class="bm" id="bm"><button aria-haspopup="true" aria-expanded="false" id="bmbtn">AO<span class="perp">⟂</span><span class="caret">▾</span></button><div class="bmenu" role="menu"><a href="index.html"><span class="t">Console</span><span class="d">sign in · author · run · results</span></a><a href="constitution.html"><span class="t">Rate card</span><span class="d">the objective, as a document</span></a><a href="fuse.html"><span class="t">The agent</span><span class="d">its pipeline, and ask it why</span></a><a href="monad.html" class="here"><span class="t">Why Monad</span><span class="d">the substrate, not a feature</span></a><a href="deck.html"><span class="t">Deck</span><span class="d">the argument in eleven slides</span></a></div></div> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Why Monad</span></div>
+  <div class="navl"><a href="index.html">console</a><a href="constitution.html">rate card</a><a href="fuse.html">the agent</a></div>
+</div></header>
+
+<div class="wrap hero">
+  <h1>Monad is the substrate, not a feature.</h1>
+  <p>The claim this project makes is that an objective can fail at an address and be contradicted in public. That needs somewhere public, permissionless and cheap to put the objective — and fast enough that the correction happens while you watch. <em>Everything below is what the chain does that a database could not.</em></p>
+  <div class="addrbar">
+    <span>contract <b id="ao">0x06a9c31103F64F27aAb6874Faa82E080bCB01Ae7</b></span>
+    <span>chain <b>10143</b> · Monad testnet</span>
+    <span><a id="exp" href="https://testnet.monadexplorer.com/address/0x06a9c31103F64F27aAb6874Faa82E080bCB01Ae7" target="_blank" rel="noopener">read it on the explorer →</a></span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section>
+  <div class="sechead"><span class="num">01</span><h2>What the chain provides</h2><span class="eyebrow">five things, each tied to the loop</span></div>
+
+  <div class="point"><span class="pn">1</span><div>
+    <h3>The rate card is on-chain state, not a config file.</h3>
+    <p>Terms, parameters, residuals and proposals are storage mappings in <code>AO.sol</code>. Anyone can read the objective function without asking us for it, and no one — including the author — can quietly rewrite what it used to say.</p>
+    <div class="loop"><b>ties to</b>The prior the agent reads at the start of every round is fetched from this storage, not from the agent's own memory. It holds no private beliefs.</div>
+  </div></div>
+
+  <div class="point"><span class="pn">2</span><div>
+    <h3>Authority separation is enforced by the EVM, not by trust.</h3>
+    <p><code>onlyAuthor</code> and <code>onlySRI</code> are <code>require</code> statements comparing <code>msg.sender</code>. The agent cannot author a term because the transaction reverts — a consensus rule, not a policy it might choose to ignore. Monad's EVM equivalence means this is ordinary Solidity: no novel trust assumptions to audit.</p>
+    <div class="loop"><b>ties to</b>The moment the agent diagnoses a missing line item, it opens a proposal and stops. Not because it was well-behaved — because authoring would revert.</div>
+  </div></div>
+
+  <div class="point"><span class="pn">3</span><div>
+    <h3>Payments are real value, with a citation attached.</h3>
+    <p><code>citedPay</code> moves native MON out of the contract's treasury. The agent isn't logging that it paid — it paid. And the transfer reverts if it cannot name the term authorising it or stay under the authored ceiling. The economic stake is what makes the constraint bite.</p>
+    <div class="loop"><b>ties to</b>Every "paid, within your rate" line in the run log is a real transfer; every "over your rate — logged, not paid" is the agent declining to breach and filing evidence instead.</div>
+  </div></div>
+
+  <div class="point"><span class="pn">4</span><div>
+    <h3>Every correction is an event, so the interface is just a chain reader.</h3>
+    <p>These pages hold no database. They call <code>termCount()</code>, <code>params(i)</code> and <code>getLogs()</code> against Monad RPC and render whatever the chain says. The ledger of payments, residuals, commits and ratifications <em>is</em> the block history — legibility comes free from the substrate rather than from us promising to log honestly.</p>
+    <div class="loop"><b>ties to</b>The agent page recomputes the diagnosis arithmetic in your browser from on-chain residuals. Same inputs, same verdict — you can check its homework without trusting our rendering.</div>
+  </div></div>
+
+  <div class="point"><span class="pn">5</span><div>
+    <h3>Speed is what makes the loop watchable.</h3>
+    <p>A single round fires a rapid sequence: six invoices, then residuals, then a commit — and each confirms fast enough to narrate live. On a chain with twelve-second blocks, a six-transaction round is a minute of dead air and the demo collapses into a progress bar. Cheap gas is why running a full demo costs pocket change and nobody has to ration the evidence.</p>
+    <div class="loop"><b>ties to</b>The repair loop only reads as a loop if the correction lands while the audience is still watching. Finality speed is the difference between a claim and a demonstration.</div>
+  </div></div>
+</section>
+
+<section>
+  <div class="sechead"><span class="num">02</span><h2>Concretely used</h2><span class="eyebrow">what's actually in the build</span></div>
+  <div class="stack">
+    <div class="st"><div class="k">Toolchain</div><div class="v">Monad Foundry (forge 1.7.1-monad) · <code>chain_id = 10143</code> · scaffolded from foundry-monad</div></div>
+    <div class="st"><div class="k">Deploy</div><div class="v"><code>forge script Seed.s.sol --broadcast</code> — deploys AO, funds the treasury, authors the genesis rate card in one transaction batch</div></div>
+    <div class="st"><div class="k">Frontend</div><div class="v">viem in the browser against <code>testnet-rpc.monad.xyz</code>, with backoff for the public endpoint's 15 req/s cap. No server, no indexer, no database.</div></div>
+    <div class="st"><div class="k">Verification</div><div class="v">testnet.monadexplorer.com — every payment, residual, commit and signature in the demo is a link you can open</div></div>
+  </div>
+</section>
+
+<section style="border-bottom:none">
+  <div class="sechead"><span class="num">03</span><h2>The honest version</h2><span class="eyebrow">for judges</span></div>
+  <div class="honest">
+    <h3>What we don't claim</h3>
+    <p>AO uses nothing Monad-exclusive. There are no parallel-execution tricks, no custom precompiles, no dependency on anything another EVM chain lacks. Claiming otherwise would be the kind of unearned assertion this whole project argues against.</p>
+    <p>What it needs is an EVM chain fast and cheap enough that a full loop — author, act, correct, escalate, sign — runs at conversational speed, in front of an audience, with real value moving. Monad is what makes the argument demonstrable rather than merely described.</p>
+    <p>That is not a small thing. The difference between "this system could correct itself in public" and watching it do so in ninety seconds is the entire difference between a paper and a product.</p>
+  </div>
+</section>
+
+</div>
+
+<footer><div class="wrap">Authored Objectives · Monad Blitz London 2026 · <a href="index.html" style="border-bottom:1px solid var(--line);text-decoration:none">back to the console</a></div></footer>
+
+
+<script>
+(function(){
+  var bm=document.getElementById('bm'); if(!bm) return;
+  var btn=document.getElementById('bmbtn');
+  function set(o){ bm.classList.toggle('open',o); btn.setAttribute('aria-expanded',o?'true':'false'); }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); set(!bm.classList.contains('open')); });
+  document.addEventListener('click',function(e){ if(!bm.contains(e.target)) set(false); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') set(false); });
+})();
+</script>
+</body>
+</html>

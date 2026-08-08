@@ -98,12 +98,31 @@
   footer .big{font-weight:900;color:var(--ink);font-size:14px;margin-bottom:6px}
   @media(max-width:640px){ .param{grid-template-columns:minmax(0,1fr) auto} .param .mark{order:-1} }
   @media(prefers-reduced-motion:reduce){ .pulse{animation:none} }
+
+  /* brand menu */
+  .bm{position:relative;display:inline-block}
+  .bm>button{background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:baseline;gap:5px}
+  .bm>button:focus-visible{outline:2px solid var(--live);outline-offset:3px}
+  .bm .caret{font-size:11px;color:var(--meta);transition:transform .18s;transform:translateY(-3px)}
+  .bm.open .caret{transform:translateY(-3px) rotate(180deg)}
+  .bmenu{position:absolute;top:calc(100% + 12px);left:-14px;min-width:250px;background:var(--paper);
+    border:1px solid var(--ink);padding:6px;opacity:0;visibility:hidden;transform:translateY(-6px);
+    transition:opacity .16s,transform .16s,visibility .16s;z-index:40}
+  .bm.open .bmenu{opacity:1;visibility:visible;transform:translateY(0)}
+  .bmenu a{display:block;padding:10px 12px;text-decoration:none;border-bottom:1px solid var(--line)}
+  .bmenu a:last-child{border-bottom:none}
+  .bmenu a:hover,.bmenu a:focus-visible{background:var(--line);outline:none}
+  .bmenu .t{font:700 13px var(--disp);letter-spacing:-.01em;display:flex;justify-content:space-between;gap:10px}
+  .bmenu .d{font:11px var(--mono);color:var(--meta);margin-top:2px}
+  .bmenu a.here .t{color:var(--live)}
+  .bmenu a.here .t:after{content:"you are here";font:10px var(--mono);color:var(--meta);font-weight:400;letter-spacing:.06em}
+  @media(prefers-reduced-motion:reduce){ .bmenu,.bm .caret{transition:none} }
 </style>
 </head>
 <body>
 
 <header><div class="wrap hrow">
-  <div class="brand"><a href="index.html" style="text-decoration:none">AO<span class="perp">⟂</span></a> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Constitution</span></div>
+  <div class="brand"><div class="bm" id="bm"><button aria-haspopup="true" aria-expanded="false" id="bmbtn">AO<span class="perp">⟂</span><span class="caret">▾</span></button><div class="bmenu" role="menu"><a href="index.html"><span class="t">Console</span><span class="d">sign in · author · run · results</span></a><a href="constitution.html" class="here"><span class="t">Rate card</span><span class="d">the objective, as a document</span></a><a href="fuse.html"><span class="t">The agent</span><span class="d">its pipeline, and ask it why</span></a><a href="monad.html"><span class="t">Why Monad</span><span class="d">the substrate, not a feature</span></a><a href="deck.html"><span class="t">Deck</span><span class="d">the argument in eleven slides</span></a></div></div> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Rate card</span></div>
   <div class="addr"><span class="pulse"></span><a id="addrlink" target="_blank" rel="noopener"></a> · Monad Testnet · <span id="blocknum">—</span></div>
 </div></header>
 
@@ -393,6 +412,17 @@ async function tick(){
   catch(err){ console.error(err); }
 }
 tick(); setInterval(tick, 6000);
+</script>
+
+<script>
+(function(){
+  var bm=document.getElementById('bm'); if(!bm) return;
+  var btn=document.getElementById('bmbtn');
+  function set(o){ bm.classList.toggle('open',o); btn.setAttribute('aria-expanded',o?'true':'false'); }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); set(!bm.classList.contains('open')); });
+  document.addEventListener('click',function(e){ if(!bm.contains(e.target)) set(false); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') set(false); });
+})();
 </script>
 </body>
 </html>
