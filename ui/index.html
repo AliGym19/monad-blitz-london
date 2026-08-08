@@ -86,6 +86,13 @@
   .stamp.rat{color:var(--ok);border-color:var(--ok)}
   .stamp.ref{color:var(--refuse);border-color:var(--refuse)}
   .connect{font:12px var(--mono);color:var(--meta)}
+  .signin{border:1px solid var(--line);padding:14px;margin-top:6px}
+  .signrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .filebtn{font:700 12px var(--disp);padding:9px 14px;border:1.5px solid var(--ink);cursor:pointer;color:var(--ink)}
+  .ksname{font:11px var(--mono);color:var(--meta);max-width:18ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .signrow input[type=password]{font:13px var(--mono);padding:9px 10px;border:1px solid var(--line);background:transparent;color:var(--ink);outline:none;min-width:150px}
+  .signrow input[type=password]:focus{border-color:var(--ink)}
+  .signerr{display:block;margin-top:8px;font:11px var(--mono);color:var(--refuse)}
 
   footer{padding:34px 0 60px;color:var(--meta);font-size:12px}
   footer .big{font-weight:900;color:var(--ink);font-size:14px;margin-bottom:6px}
@@ -119,7 +126,19 @@
   <section id="s3">
     <div class="sechead"><span class="num">03</span><h2>The Signature Desk</h2><span class="eyebrow">the fuse does not hold the pen</span></div>
     <div id="props"><div class="empty">No proposals. The vocabulary currently fits the world.</div></div>
-    <p class="connect" id="walletline">Author actions require the deployer wallet. <button class="ghost" id="connect" style="margin-left:8px">Connect wallet</button></p>
+    <div class="connect" id="walletline">
+      <div class="signin" id="signin">
+        <span class="eyebrow" style="display:block;margin-bottom:8px">Author sign-in — standing is a file and a passphrase</span>
+        <div class="signrow">
+          <label class="filebtn"><input type="file" id="ksfile" accept="*/*" hidden />Choose keystore</label>
+          <span id="ksname" class="ksname">no file</span>
+          <input type="password" id="kspass" placeholder="passphrase" autocomplete="off" />
+          <button id="ksgo">Sign in</button>
+          <button class="ghost" id="connect" title="Use a browser wallet instead">MetaMask</button>
+        </div>
+        <span id="signerr" class="signerr"></span>
+      </div>
+    </div>
   </section>
 </div>
 
@@ -129,7 +148,7 @@
 </div></footer>
 
 <script type="module">
-import { createPublicClient, createWalletClient, custom, http, defineChain, formatEther, parseAbi, decodeEventLog } from 'https://esm.sh/viem@2.21.19';
+import { createPublicClient, createWalletClient, custom, http, defineChain, formatEther, parseAbi } from 'https://esm.sh/viem@2.21.19';
 
 // ── CONFIG ──────────────────────────────────────────────────────────
 const AO = '0x471F9d86158e64d348c73Cf4f1C60E0FbcaFb27F';
@@ -232,7 +251,7 @@ async function readLedger(bn){
   const parsed = [];
   for (const lg of logs) {
     try {
-      const ev = decodeEventLog({ abi, data: lg.data, topics: lg.topics });
+      const ev = (await import('https://esm.sh/viem@2.21.19')).decodeEventLog({ abi, data: lg.data, topics: lg.topics });
       parsed.push({ ev, tx: lg.transactionHash, block: lg.blockNumber });
     } catch {}
   }
@@ -287,21 +306,54 @@ function renderProposals(props){
   document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click', onAction));
 }
 
+function signedIn(addr){
+  account = addr;
+  $('walletline').innerHTML = `Signed in as <b>${short(addr)}</b> — this key holds standing.`;
+}
+
+// Primary: the keystore itself. Decrypt in-browser, sign over RPC. No extension.
+let ksJson = null;
+$('ksfile').addEventListener('change', async e=>{
+  const f = e.target.files[0]; if(!f) return;
+  ksJson = await f.text();
+  $('ksname').textContent = f.name;
+  $('signerr').textContent = '';
+});
+$('ksgo').addEventListener('click', async ()=>{
+  $('signerr').textContent = '';
+  if(!ksJson){ $('signerr').textContent = 'Choose the keystore file first (e.g. ~/.foundry/keystores/monad-deployer).'; return; }
+  const pass = $('kspass').value;
+  if(!pass){ $('signerr').textContent = 'Passphrase required.'; return; }
+  $('ksgo').disabled = true; $('ksgo').textContent = 'Decrypting…';
+  try{
+    const { Wallet } = await import('https://esm.sh/ethers@6.13.4');
+    const w = await Wallet.fromEncryptedJson(ksJson, pass);
+    const { privateKeyToAccount } = await import('https://esm.sh/viem@2.21.19/accounts');
+    const acct = privateKeyToAccount(w.privateKey);
+    wallet = createWalletClient({ chain, transport: http(), account: acct });
+    signedIn(acct.address);
+  } catch(err){
+    $('signerr').textContent = 'Decryption failed — wrong passphrase or not a keystore JSON.';
+    $('ksgo').disabled = false; $('ksgo').textContent = 'Sign in';
+  }
+});
+$('kspass').addEventListener('keydown', e=>{ if(e.key==='Enter') $('ksgo').click(); });
+
+// Secondary: a browser wallet, if one exists.
 async function connect(){
-  if(!window.ethereum){ alert('No wallet found. Install MetaMask and import the deployer keystore.'); return; }
+  if(!window.ethereum){ $('signerr').textContent = 'No browser wallet detected — use the keystore sign-in on the left.'; return; }
   try { await window.ethereum.request({ method:'wallet_addEthereumChain', params:[{
     chainId:'0x279F', chainName:'Monad Testnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18},
     rpcUrls:[RPC], blockExplorerUrls:[EXPLORER] }] }); } catch {}
   const [acct] = await window.ethereum.request({ method:'eth_requestAccounts' });
-  account = acct;
-  wallet = createWalletClient({ chain, transport: custom(window.ethereum), account });
-  $('walletline').innerHTML = `Connected as <b>${short(account)}</b> — this key holds standing.`;
+  wallet = createWalletClient({ chain, transport: custom(window.ethereum), account: acct });
+  signedIn(acct);
 }
 $('connect').addEventListener('click', connect);
 
 async function onAction(e){
   const id = BigInt(e.target.dataset.id); const act = e.target.dataset.act;
-  if(!wallet){ await connect(); if(!wallet) return; }
+  if(!wallet){ $('signerr').textContent = 'Sign in first — the signature desk needs the author key.'; $('kspass').focus(); return; }
   e.target.disabled = true;
   try{
     if(act==='ratify'){

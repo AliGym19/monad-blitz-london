@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Fuse · SRI · Authored Objective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Newsreader:ital,opsz,wght@1,6..72,400..500&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#FAFAF8; --ink:#141412; --meta:#8B8B85; --line:#E4E3DE;
+    --live:#1F3BD1; --refuse:#C8322B; --ok:#1E6B45;
+    --disp:'Archivo',sans-serif; --serif:'Newsreader',serif; --mono:'Spline Sans Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font:16px/1.55 var(--disp);-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  header{position:sticky;top:0;background:var(--paper);border-bottom:1px solid var(--ink);z-index:10}
+  .hrow{display:flex;align-items:baseline;justify-content:space-between;padding:14px 0;gap:16px;flex-wrap:wrap}
+  .brand{font-weight:900;letter-spacing:-.02em;font-size:22px}
+  .brand .perp{color:var(--live)}
+  .brand a{text-decoration:none}
+  .addr{font:12px var(--mono);color:var(--meta)}
+  .hero{padding:56px 0 40px;border-bottom:1px solid var(--ink)}
+  .hero h1{font-weight:900;font-variation-settings:'wdth' 118;letter-spacing:-.03em;font-size:clamp(30px,5.4vw,62px);line-height:1.04;max-width:18ch}
+  .hero p{margin-top:16px;max-width:56ch;color:var(--meta);font-size:15px}
+  .hero p em{font-family:var(--serif);font-style:italic;color:var(--ink)}
+  section{padding:44px 0;border-bottom:1px solid var(--line)}
+  .sechead{display:flex;align-items:baseline;gap:14px;margin-bottom:26px}
+  .num{font-weight:900;font-size:13px;color:var(--live)}
+  .sechead h2{font-weight:900;font-size:15px;text-transform:uppercase;letter-spacing:-.01em}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--meta)}
+
+  /* pipeline */
+  .pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--ink)}
+  .stage{border-right:1px solid var(--line);padding:16px 14px;min-height:190px;display:flex;flex-direction:column;gap:8px;position:relative}
+  .stage:last-child{border-right:none}
+  .stage .sn{font-weight:900;font-size:11px;color:var(--live)}
+  .stage h3{font-weight:900;font-size:15px;letter-spacing:-.01em}
+  .stage .what{font-size:12px;color:var(--meta);line-height:1.5}
+  .stage .data{font:12px var(--mono);margin-top:auto}
+  .stage .data b{font-weight:500}
+  .stage.active{outline:2px solid var(--live);outline-offset:-2px}
+  .stage .arrow{position:absolute;right:-7px;top:50%;transform:translateY(-50%);background:var(--paper);color:var(--meta);font-size:12px;z-index:1}
+  .cannot{border-top:1px solid var(--ink);margin-top:0;padding:12px 14px;font:12px var(--mono);color:var(--refuse);display:flex;gap:18px;flex-wrap:wrap}
+  .cannot b{font-weight:500}
+
+  /* calculus replay */
+  .calc{border:1px solid var(--ink);padding:20px}
+  .calc h3{font-weight:900;font-size:16px;margin-bottom:12px}
+  .crow{display:grid;grid-template-columns:170px 1fr auto;gap:12px;padding:9px 0;border-top:1px solid var(--line);font:13px var(--mono);align-items:baseline}
+  .crow .lbl{color:var(--meta);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-family:var(--disp);font-weight:700}
+  .verdictline{margin-top:14px;padding:12px;border:1.5px solid var(--ink);font-weight:900;font-size:14px;letter-spacing:.02em;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .verdictline.commit{border-color:var(--live);color:var(--live)}
+  .verdictline.escalate{border-color:var(--refuse);color:var(--refuse)}
+  .verdictline.wait{color:var(--meta);border-color:var(--line)}
+  .pass{color:var(--ok)} .fail{color:var(--refuse)}
+  .residlist{font:11px var(--mono);color:var(--meta);margin-top:10px;line-height:1.8}
+  .residlist a{text-decoration:none;border-bottom:1px solid var(--line)}
+  .selector{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .selector button{font:700 12px var(--disp);padding:7px 12px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer}
+  .selector button.on{background:var(--ink);color:var(--paper)}
+
+  /* interrogation */
+  .qa{display:grid;grid-template-columns:minmax(0,1fr);gap:0;border:1px solid var(--ink)}
+  .qlog{padding:18px;min-height:240px;max-height:440px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+  .turn.q{align-self:flex-end;max-width:80%;font-weight:700;font-size:14px;text-align:right}
+  .turn.a{max-width:88%;font-size:14px}
+  .turn.a .ans{font-family:var(--serif);font-style:italic;font-size:16px;line-height:1.55}
+  .turn.a .cite{display:block;margin-top:6px;font:11px var(--mono);color:var(--meta)}
+  .turn.a .cite a{text-decoration:none;border-bottom:1px solid var(--line)}
+  .turn.a.refusal .ans{color:var(--refuse)}
+  .qbar{display:flex;border-top:1px solid var(--ink)}
+  .qbar input{flex:1;border:none;background:transparent;padding:14px;font:14px var(--disp);color:var(--ink);outline:none}
+  .qbar button{font:700 13px var(--disp);padding:0 22px;border:none;border-left:1px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer}
+  .suggest{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .suggest button{font:12px var(--mono);padding:6px 10px;border:1px solid var(--line);background:transparent;color:var(--meta);cursor:pointer}
+  .suggest button:hover{border-color:var(--ink);color:var(--ink)}
+  footer{padding:34px 0 60px;color:var(--meta);font-size:12px}
+  @media(max-width:900px){ .pipe{grid-template-columns:1fr}
+    .stage{border-right:none;border-bottom:1px solid var(--line);min-height:0}
+    .stage .arrow{display:none} }
+</style>
+</head>
+<body>
+
+<header><div class="wrap hrow">
+  <div class="brand"><a href="index.html">AO<span class="perp">⟂</span></a> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ The Fuse</span></div>
+  <div class="addr"><a href="index.html" style="text-decoration:none;border-bottom:1px solid var(--line)">← constitution</a></div>
+</div></header>
+
+<div class="wrap hero">
+  <h1>The fuse, with the lid off.</h1>
+  <p>This is the Standing-Restricted Intelligence: the layer that reads contradictions, compresses them, and decides — under a written policy it cannot amend. Every step below is recomputed live from the chain. Ask it why, and it answers from the ledger, not from a model. <em>What it cannot prove, it refuses to say.</em></p>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <div class="sechead"><span class="num">01</span><h2>The Pipeline</h2><span class="eyebrow">observe → record → cluster → diagnose → act</span></div>
+    <div class="pipe" id="pipe">
+      <div class="stage" data-s="0"><span class="sn">S1</span><h3>Observe</h3>
+        <p class="what">Read the prior from the chain, ask the world for a quote. The parameter value is the prediction — the agent holds no private beliefs.</p>
+        <div class="data" id="d-observe">—</div><span class="arrow">→</span></div>
+      <div class="stage" data-s="1"><span class="sn">S2</span><h3>Record</h3>
+        <p class="what">Every disagreement between prior and world lands on-chain as a residual: predicted, observed, evidence hash. Declining to breach is also recorded.</p>
+        <div class="data" id="d-record">—</div><span class="arrow">→</span></div>
+      <div class="stage" data-s="2"><span class="sn">S3</span><h3>Cluster</h3>
+        <p class="what">One residual means nothing. They accumulate per parameter until n ≥ 5 — the compression step that trades felt magnitude for observed generality.</p>
+        <div class="data" id="d-cluster">—</div><span class="arrow">→</span></div>
+      <div class="stage" data-s="3"><span class="sn">S4</span><h3>Diagnose</h3>
+        <p class="what">Median, sign consistency, dispersion — the written calculus of spec 03. Four possible verdicts. The arithmetic is replayed below, live.</p>
+        <div class="data" id="d-diagnose">—</div><span class="arrow">→</span></div>
+      <div class="stage" data-s="4"><span class="sn">S5</span><h3>Act</h3>
+        <p class="what">Number-wrong within bounds: commit, close the ⟂ mark. Missing word or wrong scope: open a proposal and stop. Otherwise: wait.</p>
+        <div class="data" id="d-act">—</div></div>
+    </div>
+    <div class="cannot"><b>STRUCTURALLY CANNOT:</b> author a term · amend scope · exceed written bounds · cite consumed evidence · pay without citation — <b>each attempt reverts on-chain</b></div>
+  </section>
+
+  <section>
+    <div class="sechead"><span class="num">02</span><h2>The Calculus, Replayed</h2><span class="eyebrow">same inputs, same verdict, every time</span></div>
+    <div class="selector" id="clusters"></div>
+    <div class="calc" id="calc"><span class="eyebrow">Reading residuals from the chain…</span></div>
+  </section>
+
+  <section>
+    <div class="sechead"><span class="num">03</span><h2>Interrogation</h2><span class="eyebrow">answers cite, or refuse</span></div>
+    <div class="qa">
+      <div class="qlog" id="qlog">
+        <div class="turn a"><span class="ans">Ask me why. I answer only what the ledger can prove — every reply carries its citation, and a question I cannot ground gets a refusal, not a guess.</span></div>
+      </div>
+      <div class="qbar"><input id="qin" placeholder="Why did you change the price ceiling?" aria-label="Ask the fuse" />
+      <button id="qgo">Ask</button></div>
+    </div>
+    <div class="suggest" id="suggest"></div>
+  </section>
+
+</div>
+
+<footer><div class="wrap">A civil servant, not a legislator. Delegated authority has a line number; every one of them is linked above.</div></footer>
+
+<script type="module">
+import { createPublicClient, http, defineChain, formatEther, parseAbi, decodeEventLog } from 'https://esm.sh/viem@2.21.19';
+
+const AO = '0x471F9d86158e64d348c73Cf4f1C60E0FbcaFb27F';
+const RPC = 'https://testnet-rpc.monad.xyz';
+const EXPLORER = 'https://testnet.monadexplorer.com';
+const LOG_WINDOW = 80000n;
+
+// spec/03 boundary constants — quoted to the user verbatim, themselves ⟂.
+const SPEC = { MIN_SAMPLES:5, ERROR_THRESHOLD:0.15, SIGN_CONSISTENCY:0.8, DISPERSION_MAX:2.0 };
+
+const chain = defineChain({ id:10143, name:'Monad Testnet',
+  nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:{default:{http:[RPC]}} });
+const abi = parseAbi([
+  'function residualCount() view returns (uint256)',
+  'function residuals(uint256) view returns (uint256 paramId,int256 predicted,int256 observed,bytes32 evidenceHash,uint64 at,bool consumed)',
+  'function params(uint256) view returns (uint256 termId,string name,int256 value,int256 minBound,int256 maxBound,bool bottomMark,uint32 samplesAbsorbed,bool exists)',
+  'function paramCount() view returns (uint256)',
+  'function terms(uint256) view returns (string name,string theory,uint8 scope,string conditionText,bool exists,uint64 authoredAt,uint32 version)',
+  'function termCount() view returns (uint256)',
+  'function proposalCount() view returns (uint256)',
+  'function proposals(uint256) view returns (uint8 kind,uint8 diagnosis,string proposedName,string proposedTheory,uint8 proposedScope,string proposedCondition,uint256 targetTermId,bytes32 reasoningHash,bool ratified,bool refused,string refusalReason,uint64 openedAt)',
+  'event CitedPayment(uint256 indexed termId,uint256 indexed paramId,address indexed to,uint256 amount)',
+  'event ParameterCommitted(uint256 indexed paramId,int256 oldValue,int256 newValue,bool markClosed,uint256[] citedResiduals,bytes32 reasoningHash)',
+  'event ProposalOpened(uint256 indexed proposalId,uint8 diagnosis,bytes32 reasoningHash)',
+]);
+const pub = createPublicClient({ chain, transport: http() });
+const $ = id => document.getElementById(id);
+const fmt = w => (+formatEther(BigInt(w))).toFixed(4).replace(/0+$/,'').replace(/\.$/,'')+' MON';
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const txl = h => `<a href="${EXPLORER}/tx/${h}" target="_blank" rel="noopener">${h.slice(0,10)}…</a>`;
+
+// ── state ───────────────────────────────────────────────────────────
+let S = { residuals:[], params:[], terms:[], proposals:[], commits:[], pays:[], props:[] , selected:1 };
+
+function calculus(rs){
+  const errs = rs.map(r=>(Number(r.observed)-Number(r.predicted))/Number(r.predicted)).sort((a,b)=>a-b);
+  const n = errs.length;
+  const med = a => a.length? (a.length%2? a[(a.length-1)/2] : (a[a.length/2-1]+a[a.length/2])/2) : 0;
+  const m = med(errs), q1 = med(errs.slice(0,Math.floor(n/2))), q3 = med(errs.slice(Math.ceil(n/2)));
+  const iqr = q3-q1;
+  const sign = n? Math.max(errs.filter(e=>e>0).length, errs.filter(e=>e<0).length)/n : 0;
+  const disp = Math.abs(m)<1e-9? Infinity : iqr/Math.abs(m);
+  let verdict='WAIT', why='';
+  if(n < SPEC.MIN_SAMPLES){ verdict='WAIT'; why=`n=${n} < ${SPEC.MIN_SAMPLES} — below the grading`; }
+  else if(disp > SPEC.DISPERSION_MAX){ verdict='WAIT'; why=`dispersion ${disp.toFixed(2)} > ${SPEC.DISPERSION_MAX} — the residuals disagree with each other`; }
+  else if(Math.abs(m) > SPEC.ERROR_THRESHOLD && sign >= SPEC.SIGN_CONSISTENCY){ verdict='ACT'; why=`consistent contradiction: |median| ${(m*100).toFixed(1)}% > ${SPEC.ERROR_THRESHOLD*100}%, sign ${(sign*100).toFixed(0)}% ≥ ${SPEC.SIGN_CONSISTENCY*100}%`; }
+  else { verdict='WAIT'; why=`median ${(m*100).toFixed(1)}% within tolerance or sign mixed`; }
+  return { n, median:m, sign, dispersion:disp, verdict, why };
+}
+
+async function load(){
+  const [rc, pc, tc, prc, bn] = await Promise.all([
+    pub.readContract({address:AO,abi,functionName:'residualCount'}),
+    pub.readContract({address:AO,abi,functionName:'paramCount'}),
+    pub.readContract({address:AO,abi,functionName:'termCount'}),
+    pub.readContract({address:AO,abi,functionName:'proposalCount'}),
+    pub.getBlockNumber(),
+  ]);
+  S.residuals = await Promise.all(Array.from({length:Number(rc)},(_,i)=>
+    pub.readContract({address:AO,abi,functionName:'residuals',args:[BigInt(i+1)]})
+      .then(r=>({id:i+1,paramId:Number(r[0]),predicted:r[1],observed:r[2],evidence:r[3],at:Number(r[4]),consumed:r[5]}))));
+  S.params = await Promise.all(Array.from({length:Number(pc)},(_,i)=>
+    pub.readContract({address:AO,abi,functionName:'params',args:[BigInt(i+1)]})
+      .then(p=>({id:i+1,termId:Number(p[0]),name:p[1],value:p[2],min:p[3],max:p[4],mark:p[5],samples:Number(p[6])}))));
+  S.terms = await Promise.all(Array.from({length:Number(tc)},(_,i)=>
+    pub.readContract({address:AO,abi,functionName:'terms',args:[BigInt(i+1)]})
+      .then(t=>({id:i+1,name:t[0],theory:t[1],scope:t[2],cond:t[3],version:t[6]}))));
+  S.props = await Promise.all(Array.from({length:Number(prc)},(_,i)=>
+    pub.readContract({address:AO,abi,functionName:'proposals',args:[BigInt(i+1)]})
+      .then(p=>({id:i+1,kind:p[0],diagnosis:p[1],name:p[2],theory:p[3],reasoning:p[7],ratified:p[8],refused:p[9],reason:p[10]}))));
+  // events for citations
+  const from = bn > LOG_WINDOW ? bn-LOG_WINDOW : 0n;
+  let logs=[]; try{ logs = await pub.getLogs({address:AO,fromBlock:from,toBlock:bn}); }catch{}
+  S.commits=[]; S.pays=[];
+  for(const lg of logs){ try{
+    const ev = decodeEventLog({abi, data:lg.data, topics:lg.topics});
+    if(ev.eventName==='ParameterCommitted') S.commits.push({...ev.args, tx:lg.transactionHash});
+    if(ev.eventName==='CitedPayment') S.pays.push({...ev.args, tx:lg.transactionHash});
+    if(ev.eventName==='ProposalOpened') { const p=S.props[Number(ev.args.proposalId)-1]; if(p) p.tx=lg.transactionHash; }
+  }catch{}}
+  render();
+}
+
+function render(){
+  // pipeline live data
+  const p1 = S.params.find(p=>p.id===S.selected) || S.params[0];
+  if(p1){
+    $('d-observe').innerHTML = `prior §${p1.termId}.${p1.id} <b>${fmt(p1.value)}</b>${p1.mark?' · ⟂ open':''}`;
+  }
+  $('d-record').innerHTML = `<b>${S.residuals.length}</b> residuals on-chain · ${S.residuals.filter(r=>r.consumed).length} consumed`;
+  const open = S.residuals.filter(r=>r.paramId===(p1?p1.id:1) && !r.consumed);
+  $('d-cluster').innerHTML = `open cluster on §·${p1?p1.id:'—'}: <b>${open.length} / ${SPEC.MIN_SAMPLES}</b>`;
+  const c = calculus(open);
+  $('d-diagnose').innerHTML = open.length? `median <b>${(c.median*100).toFixed(1)}%</b> · sign <b>${(c.sign*100).toFixed(0)}%</b> · disp <b>${isFinite(c.dispersion)?c.dispersion.toFixed(2):'∞'}</b>` : 'no open cluster';
+  $('d-act').innerHTML = `<b>${S.commits.length}</b> commits · <b>${S.props.length}</b> escalations · ${S.props.filter(p=>!p.ratified&&!p.refused).length} awaiting signature`;
+  document.querySelectorAll('.stage').forEach((el,i)=>el.classList.toggle('active', open.length>0 ? i===3 : i===0));
+
+  // cluster selector
+  $('clusters').innerHTML = S.params.map(p=>
+    `<button class="${p.id===S.selected?'on':''}" data-p="${p.id}">§${p.termId}.${p.id} ${esc(p.name)}</button>`).join('');
+  document.querySelectorAll('#clusters button').forEach(b=>b.onclick=()=>{S.selected=Number(b.dataset.p);render();});
+
+  // calculus replay for selected param — includes consumed (historical) residuals
+  const all = S.residuals.filter(r=>r.paramId===S.selected);
+  const openSel = all.filter(r=>!r.consumed);
+  const replaySet = openSel.length? openSel : all;
+  const cc = calculus(replaySet);
+  const rows = replaySet.length? `
+    <div class="crow"><span class="lbl">inputs</span><span>${replaySet.length} residuals ${openSel.length?'(open)':'(historical — already consumed by a commit)'}</span><span></span></div>
+    <div class="crow"><span class="lbl">median error</span><span>ẽ = ${(cc.median*100).toFixed(2)}%</span><span class="${Math.abs(cc.median)>SPEC.ERROR_THRESHOLD?'pass':'fail'}">${Math.abs(cc.median)>SPEC.ERROR_THRESHOLD?'>':'≤'} ${SPEC.ERROR_THRESHOLD*100}% threshold</span></div>
+    <div class="crow"><span class="lbl">sign consistency</span><span>s = ${(cc.sign*100).toFixed(0)}%</span><span class="${cc.sign>=SPEC.SIGN_CONSISTENCY?'pass':'fail'}">${cc.sign>=SPEC.SIGN_CONSISTENCY?'≥':'<'} ${SPEC.SIGN_CONSISTENCY*100}% required</span></div>
+    <div class="crow"><span class="lbl">dispersion</span><span>D = ${isFinite(cc.dispersion)?cc.dispersion.toFixed(2):'∞'}</span><span class="${cc.dispersion<=SPEC.DISPERSION_MAX?'pass':'fail'}">${cc.dispersion<=SPEC.DISPERSION_MAX?'≤':'>'} ${SPEC.DISPERSION_MAX} ceiling</span></div>
+    <div class="crow"><span class="lbl">sample floor</span><span>n = ${cc.n}</span><span class="${cc.n>=SPEC.MIN_SAMPLES?'pass':'fail'}">${cc.n>=SPEC.MIN_SAMPLES?'≥':'<'} ${SPEC.MIN_SAMPLES} (contract-enforced)</span></div>`
+    : `<div class="crow"><span class="lbl">inputs</span><span>no residuals recorded for this parameter yet</span><span></span></div>`;
+  const commit = S.commits.filter(k=>Number(k.paramId)===S.selected).at(-1);
+  const verdictHtml = replaySet.length ? (
+    openSel.length===0 && commit
+      ? `<div class="verdictline commit"><span>VERDICT · NUMBER-WRONG → COMMITTED ${fmt(commit.oldValue)} → ${fmt(commit.newValue)}${commit.markClosed?' · ⟂ CLOSED':''}</span><span>${txl(commit.tx)}</span></div>`
+      : cc.verdict==='ACT'
+        ? `<div class="verdictline commit"><span>VERDICT · CONSISTENT CONTRADICTION — ${esc(cc.why)}</span><span>ready to commit / escalate</span></div>`
+        : `<div class="verdictline wait"><span>VERDICT · WAIT — ${esc(cc.why)}</span><span>holding</span></div>`)
+    : '';
+  const list = replaySet.map(r=>`#${r.id} predicted ${fmt(r.predicted)} → observed ${fmt(r.observed)} · ev <a href="${EXPLORER}/address/${AO}" target="_blank" rel="noopener">${r.evidence.slice(0,10)}…</a>${r.consumed?' · consumed':''}`).join('<br>');
+  $('calc').innerHTML = `<h3>§·${S.selected} ${esc((S.params.find(p=>p.id===S.selected)||{}).name||'')}</h3>${rows}${verdictHtml}<div class="residlist">${list}</div>`;
+
+  renderSuggestions();
+}
+
+// ── interrogation: retrieval + replay, never generation ─────────────
+const INTENTS = [
+  { m:/why.*(chang|commit|updat|ceiling|raise|move)/i, f:whyCommit },
+  { m:/why.*(propos|escalat|term|request-overhead|new word|add)/i, f:whyEscalate },
+  { m:/why.*(decline|refuse.*pay|not pay|didn'?t.*(pay|buy))/i, f:whyDecline },
+  { m:/(what|which).*(evidence|residual|sample|data)/i, f:whatEvidence },
+  { m:/who.*(change|amend|author|pen|allowed|permission)/i, f:whoHoldsPen },
+  { m:/(can|could) you.*(lie|hallucinat|make up|wrong)/i, f:canYouLie },
+  { m:/what.*(⟂|bottom|mark|guess)/i, f:whatMarks },
+  { m:/(threshold|constant|policy|calculus|15%|dispersion)/i, f:whatPolicy },
+  { m:/how (much|many).*(spent|paid|payment)/i, f:howMuchSpent },
+];
+const SUGGESTIONS = [
+  'Why did you change the price ceiling?',
+  'Why did you open a proposal instead of committing?',
+  'What evidence did you cite?',
+  'Who is allowed to change your rules?',
+  'Can you lie to me?',
+  'What are the ⟂ marks?',
+  'How much have you spent?',
+];
+
+function whyCommit(){
+  const k = S.commits.at(-1);
+  if(!k) return refuse('No commit exists on this chain yet. When one does, I will cite it.');
+  const cited = k.citedResiduals.map(n=>Number(n));
+  const rs = S.residuals.filter(r=>cited.includes(r.id));
+  const c = calculus(rs);
+  return ans(`Because ${rs.length} residuals agreed with each other and disagreed with the prior. Their median error was ${(c.median*100).toFixed(1)}% — past the ${SPEC.ERROR_THRESHOLD*100}% threshold — with ${(c.sign*100).toFixed(0)}% sign consistency and dispersion ${c.dispersion.toFixed(2)}. Diagnosis: number-wrong. The value moved from ${fmt(k.oldValue)} to ${fmt(k.newValue)}, the median of what the world actually said, inside my written bounds.`,
+    `cites residuals #${cited.join(', #')} · commit tx ${txl(k.tx)} · policy: spec/03 v1`);
+}
+function whyEscalate(){
+  const p = S.props.at(-1);
+  if(!p) return refuse('No proposal exists on this chain yet.');
+  return ans(`Because the number could not absorb it. The residual pattern was additive — a fixed cost per event, not a percentage of price — so no value of the existing parameter fixes it. That is a missing word, not a wrong number, and I hold no authority over words. I proposed “${p.name}” and stopped. ${p.ratified?'The author signed it into law.':p.refused?`The author refused, with a reason: “${p.reason}”.`:'It sits inert until the author signs.'}`,
+    `proposal #${p.id} · diagnosis ${['NUMBER-WRONG','FORM-WRONG','SCOPE-WRONG'][p.diagnosis]||''} · reasoning hash ${p.reasoning.slice(0,10)}… ${p.tx?'· tx '+txl(p.tx):''}`);
+}
+function whyDecline(){
+  const declined = S.residuals.filter(r=>BigInt(r.observed) > BigInt(r.predicted));
+  if(!declined.length) return refuse('The ledger records no declined purchases yet.');
+  const d = declined[0];
+  return ans(`Because the world demanded more than the constitution authorises. Quote ${fmt(d.observed)} exceeded the authored ceiling ${fmt(d.predicted)}, so I declined the purchase and recorded the contradiction instead. The world disagreeing with my prior is evidence, not permission.`,
+    `first instance: residual #${d.id} · ${declined.length} such records on-chain`);
+}
+function whatEvidence(){
+  if(!S.residuals.length) return refuse('No residuals on-chain yet — I have cited nothing because there is nothing to cite.');
+  const consumed = S.residuals.filter(r=>r.consumed);
+  return ans(`${S.residuals.length} residuals are on-chain; ${consumed.length} have been consumed by commits — evidence spends once, so certainty cannot be double-counted. Each carries a keccak256 hash of the canonical evidence record.`,
+    `residuals #1–#${S.residuals.length} · consumed: ${consumed.map(r=>'#'+r.id).join(', ')||'none'}`);
+}
+function whoHoldsPen(){
+  return ans(`Not me — structurally. The author key alone can create, amend, or refuse terms; my commits are confined to parameter values inside written bounds with ≥${SPEC.MIN_SAMPLES} cited residuals. If I attempt anything beyond that, the contract reverts. A civil servant, not a legislator.`,
+    `enforced by AO.sol: onlyAuthor on authorTerm/amendTerm/ratify/refuse · bounds check in commitParameter · try it and read the revert`);
+}
+function canYouLie(){
+  return ans(`Not here. This page does not generate answers — it retrieves chain state and replays a written calculus. Every claim above carries a residual ID, a transaction, or a policy constant you can check yourself. A question I cannot ground gets a refusal, which is the honest version of not knowing.`,
+    `verify: recompute any verdict in section 02 from the listed residuals — same inputs, same verdict, every time`);
+}
+function whatMarks(){
+  const open = S.params.filter(p=>p.mark);
+  return ans(`⟂ marks the parameters that were authored as guesses — a number written because the term needed one, never measured. ${open.length?`Currently open: ${open.map(p=>'§'+p.termId+'.'+p.id+' '+p.name).join(', ')}.`:'All marks are closed — every guessed value has since been measured.'} A mark closes only through a commit citing real residuals: the moment a guess becomes a measurement. A constitution with no marks is claiming to be complete, and nothing over real work is.`,
+    `read openMarks() on the contract yourself`);
+}
+function whatPolicy(){
+  return ans(`My diagnosis policy: a cluster needs n ≥ ${SPEC.MIN_SAMPLES}; number-wrong requires |median error| > ${SPEC.ERROR_THRESHOLD*100}% with sign consistency ≥ ${SPEC.SIGN_CONSISTENCY*100}% and dispersion ≤ ${SPEC.DISPERSION_MAX}. Honest admission: these constants are themselves ⟂ — guessed, never measured — but they live in a signed file, not in weights. Wrong in a fixed, inspectable way.`,
+    `spec/03-RESIDUALS-AND-ESCALATION.md in the repo · MIN_SAMPLES also enforced on-chain`);
+}
+function howMuchSpent(){
+  if(!S.pays.length) return refuse('The ledger shows no payments in the visible window.');
+  const total = S.pays.reduce((s,p)=>s+BigInt(p.amount),0n);
+  return ans(`${S.pays.length} cited payments totalling ${fmt(total)}, every one referencing the term that authorises it. Payments without a citation do not fail politely — they revert.`,
+    S.pays.map(p=>`${fmt(p.amount)} ${txl(p.tx)}`).join(' · '));
+}
+const ans = (a,c)=>({a,c,refusal:false});
+const refuse = a=>({a:`${a}`,c:'the ledger cannot prove more than this',refusal:true});
+
+function answer(q){
+  for(const i of INTENTS) if(i.m.test(q)) return i.f();
+  return refuse('I cannot ground that question in the ledger. I answer about: commits, escalations, declined payments, evidence, spending, the ⟂ marks, my policy constants, and who holds the pen. Anything else would be generation, and generation is where hallucination lives.');
+}
+function push(q){
+  const log = $('qlog');
+  log.insertAdjacentHTML('beforeend', `<div class="turn q">${esc(q)}</div>`);
+  const r = answer(q);
+  log.insertAdjacentHTML('beforeend', `<div class="turn a ${r.refusal?'refusal':''}"><span class="ans">${r.a}</span><span class="cite">↳ ${r.c}</span></div>`);
+  log.scrollTop = log.scrollHeight;
+}
+$('qgo').onclick = ()=>{ const v=$('qin').value.trim(); if(v){ push(v); $('qin').value=''; } };
+$('qin').addEventListener('keydown', e=>{ if(e.key==='Enter') $('qgo').click(); });
+function renderSuggestions(){
+  $('suggest').innerHTML = SUGGESTIONS.map(s=>`<button>${s}</button>`).join('');
+  document.querySelectorAll('#suggest button').forEach(b=>b.onclick=()=>push(b.textContent));
+}
+
+load(); setInterval(load, 4000);
+</script>
+</body>
+</html>
