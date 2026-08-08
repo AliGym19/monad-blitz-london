@@ -180,6 +180,15 @@ const abi = parseAbi([
 ]);
 
 const pub = createPublicClient({ chain, transport: http() });
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+async function readC(functionName, args){
+  for(let a=0;a<4;a++){
+    try{ return await pub.readContract({ address:AO, abi, functionName, args }); }
+    catch(e){ const m=String(e.message||e);
+      if(m.includes('429')||m.includes('15/sec')||m.includes('-32011')){ await sleep(500*(a+1)); continue; }
+      throw e; } }
+  throw new Error('rate-limited'); }
+
 const $ = id => document.getElementById(id);
 $('addrlink').textContent = AO.slice(0,10)+'…'+AO.slice(-6);
 $('addrlink').href = `${EXPLORER}/address/${AO}`;
@@ -191,19 +200,15 @@ const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',
 
 // ── STATE READ (reconstructed from contract, not events) ────────────
 async function readState(){
-  const [tc, pc, prc, bn] = await Promise.all([
-    pub.readContract({address:AO,abi,functionName:'termCount'}),
-    pub.readContract({address:AO,abi,functionName:'paramCount'}),
-    pub.readContract({address:AO,abi,functionName:'proposalCount'}),
-    pub.getBlockNumber(),
-  ]);
+  const tc = await readC('termCount'); await sleep(80);
+  const pc = await readC('paramCount'); await sleep(80);
+  const prc = await readC('proposalCount'); await sleep(80);
+  const bn = await pub.getBlockNumber();
   $('blocknum').textContent = 'block ' + bn.toString();
-  const terms = await Promise.all(Array.from({length:Number(tc)},(_,i)=>
-    pub.readContract({address:AO,abi,functionName:'terms',args:[BigInt(i+1)]})));
-  const params = await Promise.all(Array.from({length:Number(pc)},(_,i)=>
-    pub.readContract({address:AO,abi,functionName:'params',args:[BigInt(i+1)]})));
-  const props = await Promise.all(Array.from({length:Number(prc)},(_,i)=>
-    pub.readContract({address:AO,abi,functionName:'proposals',args:[BigInt(i+1)]})));
+  const terms=[], params=[], props=[];
+  for(let i=1;i<=Number(tc);i++){ terms.push(await readC('terms',[BigInt(i)])); await sleep(70); }
+  for(let i=1;i<=Number(pc);i++){ params.push(await readC('params',[BigInt(i)])); await sleep(70); }
+  for(let i=1;i<=Number(prc);i++){ props.push(await readC('proposals',[BigInt(i)])); await sleep(70); }
   renderConstitution(terms, params);
   renderProposals(props);
   return bn;
@@ -374,7 +379,7 @@ async function tick(){
   try { const bn = await readState(); await readLedger(bn); }
   catch(err){ console.error(err); }
 }
-tick(); setInterval(tick, 3000);
+tick(); setInterval(tick, 6000);
 </script>
 </body>
 </html>
