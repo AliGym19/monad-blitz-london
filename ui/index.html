@@ -462,6 +462,9 @@ async function doRun(){
             'A cost pattern recurs that the existing parameter cannot absorb: after correction, the same-sign contradiction returned immediately. The vocabulary needs a term for it.',0,'',0n,reasoning,residualIds]);
           R.proposalId = Number(await read('proposalCount'));
           act('escalate','escalate',`proposal #${R.proposalId} opened · sits inert until the author signs · ${txa(hash)}`);
+          R.escalation = { kind:'form',
+            summary:`form-wrong on §${R.termId}.${R.paramId}: after correcting to ${fmt(P.value)}, a same-sign contradiction returned within one round (median +${(Math.abs(c.median)*100).toFixed(1)}%, ${c.n} residuals) — no value of this parameter absorbs it. Proposed term: “request-overhead”.`,
+            pend:`The fuse corrected the number and the same contradiction came straight back — a cost exists that this parameter cannot express. It proposes a new term, “request-overhead”, citing ${c.n} residuals. A cost can be priced, or refused with a reason — never silently dropped.` };
           R.outcome='escalated'; break loop;
         } else {
           const obs = samples.map(s=>Number(s.observed)).sort((a,b)=>a-b);
@@ -474,6 +477,9 @@ async function doRun(){
             const {hash} = await send(sriClient,'openProposal',[1,2,'','',0,'',BigInt(R.termId),reasoning,residualIds]);
             R.proposalId = Number(await read('proposalCount'));
             act('escalate','escalate',`proposal #${R.proposalId} (amend scope) · ${txa(hash)}`);
+            R.escalation = { kind:'scope',
+              summary:`scope-wrong on §${R.termId}.${R.paramId}: the honest median ${fmt(nv)} falls outside the written scope [${fmt(P.min)} … ${fmt(P.max)}] — committing at the bound would hide the world's disagreement with the scope itself.`,
+              pend:`The evidence says the true value sits outside the bounds you wrote. Widening scope is a change to the words, not the numbers — it needs your signature, or a refusal with a reason.` };
             R.outcome='escalated'; break loop;
           }
           think(`<div class="verdict commit">VERDICT · NUMBER-WRONG — the value moves within written scope. The loop continues under the corrected prior.</div>`);
@@ -513,13 +519,13 @@ function debrief(){
   if(R.outcome==='stoploss') W.push(`the fuse stopped itself at the session cap — halting is an authored behaviour`);
   if(R.outcome==='escalated') W.push(`the fuse recognised the limit of its own authority and stopped`);
   if(R.declined) I.push(`${R.declined} quote${R.declined>1?'s':''} exceeded the authored ceiling — recorded, not breached`);
-  if(R.outcome==='escalated') I.push(`the vocabulary is missing a word — proposal #${R.proposalId} awaits your signature below`);
+  if(R.outcome==='escalated') I.push(R.escalation?.summary || `escalation — proposal #${R.proposalId} awaits your signature below`);
   if(R.outcome==='stoploss') I.push(`spend cap ${fmt(R.stopLoss)} reached before the round completed`);
   $('dwell').innerHTML = W.map(w=>`<div class="ditem">${w}</div>`).join('')||'<div class="dempty">nothing to report</div>';
   $('dissues').innerHTML = I.filter(Boolean).map(w=>`<div class="ditem">${w}</div>`).join('')||'<div class="dempty">none — a clean run</div>';
   if(R.outcome==='escalated'){
     $('pendingpanel').style.display='';
-    $('pendtext').textContent = 'The fuse diagnosed a failure it has no authority to fix. A cost can be priced, or refused with a reason — never silently dropped.';
+    $('pendtext').textContent = R.escalation?.pend || 'The fuse diagnosed a failure it has no authority to fix. A cost can be priced, or refused with a reason — never silently dropped.';
     $('signbtn').style.display=''; $('refusebtn').style.display=''; $('signbtn').disabled=false;
   } else $('pendingpanel').style.display='none';
 }
