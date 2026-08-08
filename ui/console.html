@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Console · Authored Objective</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Newsreader:ital,opsz,wght@1,6..72,400..500&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --paper:#FAFAF8; --ink:#141412; --meta:#8B8B85; --line:#E4E3DE;
+    --live:#1F3BD1; --refuse:#C8322B; --ok:#1E6B45;
+    --disp:'Archivo',sans-serif; --serif:'Newsreader',serif; --mono:'Spline Sans Mono',monospace; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font:16px/1.55 var(--disp);-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+  header{position:sticky;top:0;background:var(--paper);border-bottom:1px solid var(--ink);z-index:10}
+  .hrow{display:flex;align-items:baseline;justify-content:space-between;padding:14px 0;gap:16px;flex-wrap:wrap}
+  .brand{font-weight:900;letter-spacing:-.02em;font-size:22px}
+  .brand .perp{color:var(--live)}
+  .brand a{text-decoration:none}
+  .steps{font:11px var(--mono);color:var(--meta);letter-spacing:.08em}
+  .steps b{color:var(--live);font-weight:500}
+  .page{display:none;padding:48px 0}
+  .page.on{display:block}
+  h1{font-weight:900;font-variation-settings:'wdth' 118;letter-spacing:-.03em;font-size:clamp(28px,5vw,54px);line-height:1.05}
+  .lede{margin-top:14px;max-width:56ch;color:var(--meta);font-size:15px}
+  .lede em{font-family:var(--serif);font-style:italic;color:var(--ink)}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--meta)}
+  .panel{border:1px solid var(--ink);padding:22px;margin-top:26px}
+  .panel h3{font-weight:900;font-size:15px;text-transform:uppercase;margin-bottom:14px}
+  .frow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  label.f{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--meta);margin-bottom:4px}
+  input[type=text],input[type=password],input[type=number],textarea,select{
+    font:13px var(--mono);padding:10px;border:1px solid var(--line);background:transparent;color:var(--ink);outline:none;width:100%}
+  input:focus,textarea:focus,select:focus{border-color:var(--ink)}
+  textarea{font-family:var(--serif);font-style:italic;font-size:15px;min-height:74px;resize:vertical}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  button{font:700 13px var(--disp);letter-spacing:.02em;padding:11px 20px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer}
+  button.ghost{background:transparent;color:var(--ink)}
+  button:disabled{opacity:.4;cursor:default}
+  .filebtn{font:700 12px var(--disp);padding:10px 14px;border:1.5px solid var(--ink);cursor:pointer;display:inline-block}
+  .err{font:11px var(--mono);color:var(--refuse);margin-top:8px;min-height:14px}
+  .okline{font:11px var(--mono);color:var(--ok)}
+  .modes{display:flex;gap:8px;flex-wrap:wrap}
+  .modes label{border:1.5px solid var(--line);padding:10px 12px;cursor:pointer;flex:1;min-width:170px}
+  .modes input{display:none}
+  .modes label.on{border-color:var(--ink)}
+  .modes .mn{font-weight:900;font-size:13px}
+  .modes .md{font-size:11px;color:var(--meta);margin-top:2px}
+  .marktoggle{display:flex;align-items:center;gap:8px;font:12px var(--mono)}
+  .marktoggle .sym{color:var(--live);font-weight:500}
+
+  /* run page */
+  .runwrap{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:0;border:1px solid var(--ink);min-height:420px}
+  .col{padding:16px;overflow-y:auto;max-height:60vh}
+  .col.actions{border-right:1px solid var(--line)}
+  .colhead{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--meta);margin-bottom:12px;position:sticky;top:0;background:var(--paper)}
+  .line{font:12px var(--mono);padding:7px 0;border-top:1px solid var(--line);word-break:break-word}
+  .line .t{font-size:10px;letter-spacing:.08em;text-transform:uppercase;display:inline-block;min-width:70px}
+  .line.pay .t{color:var(--ok)} .line.decline .t,.line.revert .t{color:var(--refuse)}
+  .line.commit .t,.line.escalate .t,.line.author .t{color:var(--live)}
+  .line.info .t{color:var(--meta)}
+  .line a{color:var(--meta);text-decoration:none;border-bottom:1px solid var(--line);font-size:11px}
+  .think{font:12px var(--mono)}
+  .think .st{padding:7px 0;border-top:1px solid var(--line)}
+  .think .chk{display:flex;justify-content:space-between;gap:8px}
+  .think .pass{color:var(--ok)} .think .fail{color:var(--refuse)}
+  .think .verdict{font-weight:500;padding:8px;border:1.5px solid var(--ink);margin-top:8px}
+  .think .verdict.commit{border-color:var(--live);color:var(--live)}
+  .think .verdict.escalate{border-color:var(--refuse);color:var(--refuse)}
+  .cursor{display:inline-block;width:8px;height:13px;background:var(--live);animation:bl 1s infinite;vertical-align:-2px}
+  @keyframes bl{50%{opacity:0}}
+
+  /* debrief */
+  .debrief{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--ink)}
+  .dcol{padding:20px}
+  .dcol:first-child{border-right:1px solid var(--line)}
+  .dcol h4{font-weight:900;font-size:13px;text-transform:uppercase;margin-bottom:12px}
+  .dcol h4.well{color:var(--ok)} .dcol h4.issues{color:var(--refuse)}
+  .ditem{font:13px var(--mono);padding:8px 0;border-top:1px solid var(--line)}
+  .ditem a{color:var(--meta);text-decoration:none;border-bottom:1px solid var(--line);font-size:11px}
+  .dempty{font:13px var(--mono);color:var(--meta);padding:8px 0}
+  .nextrow{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+  @media(max-width:820px){ .runwrap,.debrief,.grid2,.grid3{grid-template-columns:1fr} .col.actions{border-right:none;border-bottom:1px solid var(--line)} }
+</style>
+</head>
+<body>
+
+<header><div class="wrap hrow">
+  <div class="brand"><a href="/">AO<span class="perp">⟂</span></a> <span style="font-weight:400;font-size:13px;color:var(--meta)">/ Console</span></div>
+  <div class="steps" id="steps">01 SIGN IN · 02 AUTHOR · 03 RUN · 04 DEBRIEF</div>
+</div></header>
+
+<div class="wrap">
+
+<!-- ─── PAGE 1 · SIGN IN ─────────────────────────────────────────── -->
+<div class="page on" id="p1">
+  <span class="eyebrow">01 · Standing and delegation</span>
+  <h1>Author an objective.<br>Delegate the numbers.<br>Keep the pen.</h1>
+  <p class="lede">You are about to write a spending rule into an on-chain constitution, hand an AI agent bounded authority to execute under it, and watch it either obey, correct itself with cited evidence, or escalate back to your signature. <em>Two keys, two kinds of authority.</em></p>
+
+  <div class="panel">
+    <h3>Sign in — two keys, two kinds of authority</h3>
+    <div class="grid2">
+      <div><label class="f">Author key — holds standing</label>
+        <input type="password" id="authorpk" placeholder="0x… author private key" autocomplete="off" /></div>
+      <div><label class="f">Fuse key — holds delegation</label>
+        <input type="password" id="sripk" placeholder="0x… SRI private key" autocomplete="off" /></div>
+    </div>
+    <div class="frow" style="margin-top:12px">
+      <label class="marktoggle" style="cursor:pointer"><input type="checkbox" id="remember" /> remember on this device (testnet keys only — stored in this browser, plaintext)</label>
+      <button class="ghost" id="forget" style="display:none;padding:6px 10px;font-size:11px">forget</button>
+    </div>
+    <div class="err" id="e-author"></div><div class="okline" id="ok-author"></div><div class="okline" id="ok-sri"></div>
+    <details style="margin-top:14px">
+      <summary style="font:11px var(--mono);color:var(--meta);cursor:pointer">use an encrypted keystore file instead</summary>
+      <div class="frow" style="margin-top:10px">
+        <label class="filebtn"><input type="file" id="ksfile" hidden />Choose keystore</label>
+        <span id="ksname" style="font:11px var(--mono);color:var(--meta)">no file</span>
+        <div style="flex:1;min-width:160px"><input type="password" id="kspass" placeholder="passphrase" autocomplete="off" /></div>
+      </div>
+    </details>
+  </div>
+
+  <div class="nextrow"><button id="go1">Enter the console</button></div>
+  <div class="err" id="e-p1"></div>
+</div>
+
+<!-- ─── PAGE 2 · AUTHOR ──────────────────────────────────────────── -->
+<div class="page" id="p2">
+  <span class="eyebrow">02 · The manifest — vocabulary is legislative</span>
+  <h1>Write the prior.</h1>
+  <p class="lede">A term is a named cost with a written theory. The value you give it is a guess until the world measures it — mark it <em>⟂</em> and let the loop close the mark. Structured on purpose: instructions to a civil servant are written mandates, not prose.</p>
+
+  <div class="panel">
+    <h3>Term</h3>
+    <div class="frow" id="reuserow" style="display:none">
+      <div style="flex:1"><label class="f">Reuse an existing term</label>
+      <select id="reuse"><option value="">— author a new term —</option></select></div>
+    </div>
+    <div id="newterm">
+      <div class="grid2">
+        <div><label class="f">Name</label><input type="text" id="tname" placeholder="data-purchase" value="data-purchase" /></div>
+        <div><label class="f">Ceiling per action (MON)</label><input type="number" id="tceil" step="0.001" value="0.02" /></div>
+      </div>
+      <div style="margin-top:12px"><label class="f">Written theory — why this cost exists</label>
+      <textarea id="ttheory">The agent may buy datasets from external endpoints. This cost exists because the objective values fresh ground truth over stale priors.</textarea></div>
+      <div class="grid3" style="margin-top:12px">
+        <div><label class="f">Lower bound (MON)</label><input type="number" id="tmin" step="0.001" value="0.002" /></div>
+        <div><label class="f">Upper bound (MON)</label><input type="number" id="tmax" step="0.001" value="0.06" /></div>
+        <div><label class="f">Honesty</label><div class="marktoggle"><input type="checkbox" id="tmark" checked /><span class="sym">⟂</span> guessed, never measured</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Dispatch — the fuse loops until stopped</h3>
+    <div class="grid3">
+      <div><label class="f">Purchases per round</label><input type="number" id="npurch" min="2" max="8" value="6" /></div>
+      <div><label class="f">Stop-loss — session spend cap (MON)</label><input type="number" id="stoploss" step="0.01" value="0.15" /></div>
+      <div><label class="f">Market conditions (relative to your ceiling)</label></div>
+    </div>
+    <div class="modes" id="modes">
+      <label class="on"><input type="radio" name="mode" value="calm" checked /><div class="mn">Calm</div><div class="md">quotes ~90% of ceiling — routine cited payments</div></label>
+      <label><input type="radio" name="mode" value="repriced" /><div class="mn">Repriced</div><div class="md">quotes ~40% over ceiling — declines, residuals, likely commit</div></label>
+      <label><input type="radio" name="mode" value="overhead" /><div class="mn">Overhead</div><div class="md">flat per-request cost — after a commit exists, escalates a missing word</div></label>
+    </div>
+  </div>
+
+  <div class="nextrow">
+    <button id="go2">Author on-chain & dispatch</button>
+    <button class="ghost" id="back2">← keys</button>
+  </div>
+  <div class="err" id="e-p2"></div>
+</div>
+
+<!-- ─── PAGE 3 · RUN ─────────────────────────────────────────────── -->
+<div class="page" id="p3">
+  <span class="eyebrow">03 · The run — every action cites its rule</span>
+  <h1 id="runtitle">The fuse is working.</h1>
+  <p class="lede">Left: what it does — every transaction linked. Right: why — the written calculus, replayed as it reasons. <em>Nothing here is narrative; it is arithmetic with citations.</em></p>
+  <div class="nextrow" style="margin-bottom:14px">
+    <button class="ghost" id="stopbtn" style="border-color:var(--refuse);color:var(--refuse)">■ Stop the fuse</button>
+    <span style="font:11px var(--mono);color:var(--meta);align-self:center" id="sessline">round 0 · spent 0 MON</span>
+  </div>
+  <div class="runwrap">
+    <div class="col actions"><div class="colhead">Actions</div><div id="actions"></div><span class="cursor" id="cur1"></span></div>
+    <div class="col"><div class="colhead">Reasoning — the calculus</div><div class="think" id="think"></div><span class="cursor" id="cur2"></span></div>
+  </div>
+  <div class="nextrow"><button id="go3" disabled>Debrief →</button></div>
+</div>
+
+<!-- ─── PAGE 4 · DEBRIEF ─────────────────────────────────────────── -->
+<div class="page" id="p4">
+  <span class="eyebrow">04 · Debrief — the ledger diff, not a story</span>
+  <h1>What the chain now knows.</h1>
+  <p class="lede" id="dlede"></p>
+  <div class="debrief">
+    <div class="dcol"><h4 class="well">Went well</h4><div id="dwell"></div></div>
+    <div class="dcol"><h4 class="issues">Issues encountered</h4><div id="dissues"></div></div>
+  </div>
+  <div class="panel" id="pendingpanel" style="display:none">
+    <h3 style="color:var(--refuse)">Awaiting your signature</h3>
+    <p style="font-family:var(--serif);font-style:italic" id="pendtext"></p>
+    <div class="nextrow"><button id="signbtn">Sign into law</button><button class="ghost" id="refusebtn">Refuse, with a reason</button></div>
+    <div class="err" id="e-sign"></div>
+  </div>
+  <div class="nextrow">
+    <button id="loop">Continue the loop → new dispatch</button>
+    <a href="/" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">view the constitution</a>
+    <a href="/fuse.html" style="align-self:center;font:12px var(--mono);border-bottom:1px solid var(--line);text-decoration:none">interrogate the fuse</a>
+  </div>
+</div>
+
+</div>
+
+<script type="module">
+import { createPublicClient, createWalletClient, http, defineChain, formatEther, parseEther, parseAbi, keccak256, toHex } from 'https://esm.sh/viem@2.21.19';
+import { privateKeyToAccount } from 'https://esm.sh/viem@2.21.19/accounts';
+
+const AO = '0x471F9d86158e64d348c73Cf4f1C60E0FbcaFb27F';
+const RPC = 'https://testnet-rpc.monad.xyz';
+const EXPLORER = 'https://testnet.monadexplorer.com';
+const VENDOR = '0x000000000000000000000000000000000000dEaD';
+const SPEC = { MIN_SAMPLES:5, ERROR_THRESHOLD:0.15, SIGN_CONSISTENCY:0.8, DISPERSION_MAX:2.0 };
+
+const chain = defineChain({ id:10143, name:'Monad Testnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:{default:{http:[RPC]}} });
+const abi = parseAbi([
+  'function termCount() view returns (uint256)','function paramCount() view returns (uint256)',
+  'function residualCount() view returns (uint256)','function proposalCount() view returns (uint256)',
+  'function terms(uint256) view returns (string,string,uint8,string,bool,uint64,uint32)',
+  'function params(uint256) view returns (uint256,string,int256,int256,int256,bool,uint32,bool)',
+  'function proposals(uint256) view returns (uint8,uint8,string,string,uint8,string,uint256,bytes32,bool,bool,string,uint64)',
+  'function authorTerm(string,string,uint8,string) returns (uint256)',
+  'function authorParameter(uint256,string,int256,int256,int256,bool) returns (uint256)',
+  'function submitResidual(uint256,int256,int256,bytes32) returns (uint256)',
+  'function commitParameter(uint256,int256,uint256[],bytes32)',
+  'function openProposal(uint8,uint8,string,string,uint8,string,uint256,bytes32,uint256[]) returns (uint256)',
+  'function citedPay(uint256,uint256,address,uint256)',
+  'function ratifyProposal(uint256) returns (uint256)','function refuseProposal(uint256,string)',
+]);
+const pub = createPublicClient({ chain, transport: http() });
+const $ = id => document.getElementById(id);
+const fmt = w => (+formatEther(BigInt(w))).toFixed(4).replace(/0+$/,'').replace(/\.$/,'')+' MON';
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const txa = h => `<a href="${EXPLORER}/tx/${h}" target="_blank" rel="noopener">${h.slice(0,10)}…</a>`;
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+let authorClient=null, sriClient=null;
+let run = null; // current run state
+
+function page(n){ document.querySelectorAll('.page').forEach(p=>p.classList.remove('on')); $('p'+n).classList.add('on');
+  const labels=['01 SIGN IN','02 AUTHOR','03 RUN','04 DEBRIEF'];
+  $('steps').innerHTML = labels.map((l,i)=> i===n-1?`<b>${l}</b>`:l).join(' · '); window.scrollTo(0,0); }
+
+// ── PAGE 1 ──────────────────────────────────────────────────────────
+let ksJson=null;
+$('ksfile').addEventListener('change', async e=>{ const f=e.target.files[0]; if(!f)return;
+  ksJson=await f.text(); $('ksname').textContent=f.name; $('e-author').textContent=''; });
+
+// remember-on-device (testnet only; deployed site, so localStorage is real here)
+const saved = { a: localStorage.getItem('ao_author_pk'), s: localStorage.getItem('ao_sri_pk') };
+if(saved.a && saved.s){ $('authorpk').value=saved.a; $('sripk').value=saved.s; $('remember').checked=true; $('forget').style.display=''; }
+$('forget').onclick=()=>{ localStorage.removeItem('ao_author_pk'); localStorage.removeItem('ao_sri_pk');
+  $('authorpk').value=''; $('sripk').value=''; $('remember').checked=false; $('forget').style.display='none'; };
+
+const isPk = v => /^0x[0-9a-fA-F]{64}$/.test(v);
+$('go1').onclick = async ()=>{
+  $('e-p1').textContent=''; $('go1').disabled=true; $('go1').textContent='Checking keys…';
+  try{
+    // author: pasted key first, keystore fallback
+    let authorPk = $('authorpk').value.trim();
+    if(!isPk(authorPk)){
+      if(!ksJson) throw new Error('Paste the author private key, or expand the keystore option and choose the file.');
+      const { Wallet } = await import('https://esm.sh/ethers@6.13.4');
+      const w = await Wallet.fromEncryptedJson(ksJson, $('kspass').value).catch(()=>{throw new Error('Keystore decryption failed — wrong passphrase?')});
+      authorPk = w.privateKey;
+    }
+    const a = privateKeyToAccount(authorPk);
+    authorClient = createWalletClient({ chain, transport:http(), account:a });
+    $('ok-author').textContent = `standing: ${a.address}`;
+    const pk = $('sripk').value.trim();
+    if(!isPk(pk)) throw new Error('Fuse key must be a 0x… 64-hex private key.');
+    const s = privateKeyToAccount(pk);
+    sriClient = createWalletClient({ chain, transport:http(), account:s });
+    $('ok-sri').textContent = `delegation: ${s.address}`;
+    const [ab, sb] = await Promise.all([pub.getBalance({address:a.address}), pub.getBalance({address:s.address})]);
+    if(sb===0n) throw new Error('The fuse wallet has no gas — fund it before dispatching.');
+    if(ab===0n) throw new Error('The author wallet has no gas.');
+    if($('remember').checked){ localStorage.setItem('ao_author_pk', authorPk); localStorage.setItem('ao_sri_pk', pk); }
+    else { localStorage.removeItem('ao_author_pk'); localStorage.removeItem('ao_sri_pk'); }
+    await refreshReuse();
+    page(2);
+  } catch(err){ $('e-p1').textContent = err.message; }
+  $('go1').disabled=false; $('go1').textContent='Enter the console';
+};
+
+async function refreshReuse(){
+  const pc = Number(await pub.readContract({address:AO,abi,functionName:'paramCount'}));
+  const opts=[];
+  for(let i=1;i<=pc;i++){
+    const p = await pub.readContract({address:AO,abi,functionName:'params',args:[BigInt(i)]});
+    const t = await pub.readContract({address:AO,abi,functionName:'terms',args:[p[0]]});
+    if(p[7] && p[1].includes('ceiling')||p[1].includes('wei')) opts.push({paramId:i,termId:Number(p[0]),label:`Art.${p[0]} ${t[0]} · §${p[0]}.${i} ${p[1]} · ${fmt(p[2])}`});
+  }
+  if(opts.length){ $('reuserow').style.display='';
+    $('reuse').innerHTML = '<option value="">— author a new term —</option>' + opts.map(o=>`<option value="${o.termId}:${o.paramId}">${esc(o.label)}</option>`).join(''); }
+  $('reuse').onchange = ()=>{ $('newterm').style.display = $('reuse').value? 'none':''; };
+}
+document.querySelectorAll('.modes label').forEach(l=>l.addEventListener('click',()=>{
+  document.querySelectorAll('.modes label').forEach(x=>x.classList.remove('on')); l.classList.add('on'); }));
+$('back2').onclick=()=>page(1);
+
+// ── shared tx helper ────────────────────────────────────────────────
+async function send(client, fn, args, value){
+  const { request, result } = await pub.simulateContract({ address:AO, abi, functionName:fn, args, account:client.account, value });
+  const hash = await client.writeContract(request);
+  await pub.waitForTransactionReceipt({ hash });
+  return { hash, result };
+}
+
+// ── PAGE 2 → author + dispatch ─────────────────────────────────────
+$('go2').onclick = async ()=>{
+  $('e-p2').textContent=''; $('go2').disabled=true; $('go2').textContent='Authoring…';
+  try{
+    const mode = document.querySelector('input[name=mode]:checked').value;
+    const n = Math.min(8, Math.max(2, Number($('npurch').value)||6));
+    const stopLoss = parseEther(String($('stoploss').value||'0.15'));
+    let termId, paramId;
+    if($('reuse').value){ [termId, paramId] = $('reuse').value.split(':').map(Number); run = { termId, paramId, mode, n, stopLoss, authored:false, log:[] }; }
+    else {
+      const name = $('tname').value.trim()||'unnamed-cost';
+      const theory = $('ttheory').value.trim()||'No theory written.';
+      const ceil = parseEther(String($('tceil').value||'0.02'));
+      const min = parseEther(String($('tmin').value||'0'));
+      const max = parseEther(String($('tmax').value||'1'));
+      if(!(min<=ceil && ceil<=max)) throw new Error('Ceiling must sit inside its own bounds.');
+      const t = await send(authorClient,'authorTerm',[name,theory,0,'']);
+      const tc = Number(await pub.readContract({address:AO,abi,functionName:'termCount'}));
+      const p = await send(authorClient,'authorParameter',[BigInt(tc),'price-ceiling-wei',ceil,min,max,$('tmark').checked]);
+      const pc = Number(await pub.readContract({address:AO,abi,functionName:'paramCount'}));
+      run = { termId:tc, paramId:pc, mode, n, stopLoss, authored:true, authorTx:t.hash, paramTx:p.hash, log:[] };
+    }
+    page(3); doRun();
+  } catch(err){ $('e-p2').textContent = err.shortMessage||err.message; }
+  $('go2').disabled=false; $('go2').textContent='Author on-chain & dispatch';
+};
+
+// ── PAGE 3 · the run ───────────────────────────────────────────────
+const act = (cls,tag,html)=>{ $('actions').insertAdjacentHTML('beforeend',`<div class="line ${cls}"><span class="t">${tag}</span>${html}</div>`);
+  $('actions').parentElement.scrollTop=1e9; run.log.push({cls,tag,html}); };
+const think = html=>{ $('think').insertAdjacentHTML('beforeend',`<div class="st">${html}</div>`); $('think').parentElement.scrollTop=1e9; };
+
+function quoteFor(mode, i, ceiling, initialCeiling){
+  if(mode==='calm') return (ceiling*9n)/10n;
+  if(mode==='repriced') return (ceiling*(138n+BigInt(i%5)))/100n;
+  return ceiling + initialCeiling/5n; // overhead: flat absolute add-on
+}
+
+async function readParam(id){ const p = await pub.readContract({address:AO,abi,functionName:'params',args:[BigInt(id)]});
+  return { termId:Number(p[0]), name:p[1], value:BigInt(p[2]), min:BigInt(p[3]), max:BigInt(p[4]), mark:p[5], samples:Number(p[6]) }; }
+
+function calculus(samples){
+  const errs = samples.map(s=>(Number(s.observed)-Number(s.predicted))/Number(s.predicted)).sort((a,b)=>a-b);
+  const n=errs.length; const med=a=>a.length?(a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2):0;
+  const m=med(errs), q1=med(errs.slice(0,Math.floor(n/2))), q3=med(errs.slice(Math.ceil(n/2)));
+  const iqr=q3-q1, sign=n?Math.max(errs.filter(e=>e>0).length,errs.filter(e=>e<0).length)/n:0;
+  const disp=Math.abs(m)<1e-9?Infinity:iqr/Math.abs(m);
+  return { n, median:m, sign, dispersion:disp };
+}
+
+let stopRequested=false;
+$('stopbtn').onclick=()=>{ stopRequested=true; $('stopbtn').textContent='stopping after this action…'; };
+
+async function doRun(){
+  $('actions').innerHTML=''; $('think').innerHTML=''; $('go3').disabled=true;
+  stopRequested=false; $('stopbtn').textContent='■ Stop the fuse'; $('stopbtn').style.display='';
+  const R = run;
+  R.paid=0; R.declined=0; R.residualsTotal=0; R.spent=0n; R.commits=[]; R.outcome='running'; R.round=0;
+  const sess=()=>{ $('sessline').textContent=`round ${R.round} · spent ${fmt(R.spent)} · stop-loss ${fmt(R.stopLoss)}`; };
+  try{
+    if(R.authored){ act('author','authored',`Art. ${R.termId} enters the constitution · ${txa(R.authorTx)}`);
+      act('author','authored',`§${R.termId}.${R.paramId} price-ceiling-wei · ${txa(R.paramTx)}`); }
+    let P = await readParam(R.paramId);
+    const initialCeiling = P.value;
+    think(`prior read from chain: §${R.termId}.${R.paramId} = <b>${fmt(P.value)}</b>${P.mark?' · ⟂ open (a guess)':''}<br>written scope [${fmt(P.min)} … ${fmt(P.max)}] · session stop-loss ${fmt(R.stopLoss)}`);
+
+    loop: while(!stopRequested){
+      R.round++; sess();
+      think(`<b>— round ${R.round} · ${R.mode} market —</b>`);
+      const residualIds=[]; const samples=[];
+
+      for(let i=0;i<R.n;i++){
+        if(stopRequested) break loop;
+        const q = quoteFor(R.mode,i,P.value,initialCeiling);
+        think(`quote ${i+1}/${R.n}: world asks <b>${fmt(q)}</b> · prior authorises ≤ ${fmt(P.value)}`);
+        if(q<=P.value){
+          if(R.spent + q > R.stopLoss){
+            act('decline','stop-loss',`next payment ${fmt(q)} would breach the session cap ${fmt(R.stopLoss)} — the fuse stops itself`);
+            think(`<div class="verdict escalate">STOP-LOSS — session spend cap reached. Halting is an authored behaviour, not a failure.</div>`);
+            R.outcome='stoploss'; break loop;
+          }
+          const {hash} = await send(sriClient,'citedPay',[BigInt(R.termId),BigInt(R.paramId),VENDOR,q]);
+          R.paid++; R.spent+=q; sess();
+          act('pay','payment',`${fmt(q)} → vendor, citing Art. ${R.termId} · ${txa(hash)}`);
+          think(`amount ≤ ceiling → <span class="pass">cited payment authorised</span> · session ${fmt(R.spent)}/${fmt(R.stopLoss)}`);
+        } else {
+          const ev = keccak256(toHex(JSON.stringify({round:R.round,i,mode:R.mode,observed:q.toString(),predicted:P.value.toString()})));
+          const {hash} = await send(sriClient,'submitResidual',[BigInt(R.paramId),P.value,q,ev]);
+          const rid = Number(await pub.readContract({address:AO,abi,functionName:'residualCount'}));
+          residualIds.push(BigInt(rid)); samples.push({predicted:P.value,observed:q});
+          R.declined++; R.residualsTotal++;
+          act('decline','declined',`quote ${fmt(q)} exceeds authored ceiling — residual #${rid} recorded instead of breaching · ${txa(hash)}`);
+          think(`amount > ceiling → <span class="fail">decline</span>; contradiction filed, not obeyed`);
+        }
+        await sleep(250);
+      }
+
+      if(samples.length){
+        const c = calculus(samples);
+        think(`<b>cluster on §${R.termId}.${R.paramId}: n=${c.n}</b>
+          <div class="chk"><span>|median error| ${(Math.abs(c.median)*100).toFixed(1)}%</span><span class="${Math.abs(c.median)>SPEC.ERROR_THRESHOLD?'pass':'fail'}">threshold ${SPEC.ERROR_THRESHOLD*100}%</span></div>
+          <div class="chk"><span>sign consistency ${(c.sign*100).toFixed(0)}%</span><span class="${c.sign>=SPEC.SIGN_CONSISTENCY?'pass':'fail'}">required ${SPEC.SIGN_CONSISTENCY*100}%</span></div>
+          <div class="chk"><span>dispersion ${isFinite(c.dispersion)?c.dispersion.toFixed(2):'∞'}</span><span class="${c.dispersion<=SPEC.DISPERSION_MAX?'pass':'fail'}">ceiling ${SPEC.DISPERSION_MAX}</span></div>
+          <div class="chk"><span>samples ${c.n}</span><span class="${c.n>=SPEC.MIN_SAMPLES?'pass':'fail'}">floor ${SPEC.MIN_SAMPLES} (contract-enforced)</span></div>`);
+        const consistent = c.n>=SPEC.MIN_SAMPLES && Math.abs(c.median)>SPEC.ERROR_THRESHOLD && c.sign>=SPEC.SIGN_CONSISTENCY && c.dispersion<=SPEC.DISPERSION_MAX;
+
+        if(!consistent){
+          think(`<div class="verdict">WAIT — below the grading; the fuse declines to conclude and keeps working</div>`);
+        } else if(P.samples>0 || R.mode==='overhead'){
+          think(`error is additive per event, not proportional — no value of this parameter can absorb it`);
+          think(`<div class="verdict escalate">VERDICT · FORM-WRONG — a missing word. The fuse cannot author; escalating and halting.</div>`);
+          const reasoning = keccak256(toHex(JSON.stringify({diagnosis:'FormWrong',policy:'spec/03 v1',cited:residualIds.map(String)})));
+          const {hash} = await send(sriClient,'openProposal',[0,1,'request-overhead',
+            'Every action carries a fixed per-request cost independent of price. The residuals are additive per event; no proportional ceiling can absorb them.',0,'',0n,reasoning,residualIds]);
+          R.proposalId = Number(await pub.readContract({address:AO,abi,functionName:'proposalCount'}));
+          act('escalate','escalate',`proposal #${R.proposalId} opened · sits inert until the author signs · ${txa(hash)}`);
+          R.outcome='escalated'; break loop;
+        } else {
+          const obs = samples.map(s=>Number(s.observed)).sort((a,b)=>a-b);
+          const mid = obs.length%2? obs[(obs.length-1)/2] : (obs[obs.length/2-1]+obs[obs.length/2])/2;
+          let nv = BigInt(Math.round(mid));
+          if(nv<P.min||nv>P.max){
+            think(`honest median ${fmt(nv)} falls OUTSIDE written scope [${fmt(P.min)}…${fmt(P.max)}]`);
+            think(`<div class="verdict escalate">VERDICT · SCOPE-WRONG — widening scope is the author's call; escalating and halting.</div>`);
+            const reasoning = keccak256(toHex(JSON.stringify({diagnosis:'ScopeWrong',clampNoted:true,cited:residualIds.map(String)})));
+            const {hash} = await send(sriClient,'openProposal',[1,2,'','',0,'',BigInt(R.termId),reasoning,residualIds]);
+            R.proposalId = Number(await pub.readContract({address:AO,abi,functionName:'proposalCount'}));
+            act('escalate','escalate',`proposal #${R.proposalId} (amend scope) · ${txa(hash)}`);
+            R.outcome='escalated'; break loop;
+          }
+          think(`<div class="verdict commit">VERDICT · NUMBER-WRONG — the value moves within written scope. The loop continues under the corrected prior.</div>`);
+          const reasoning = keccak256(toHex(JSON.stringify({diagnosis:'NumberWrong',median:c.median,sign:c.sign,dispersion:c.dispersion,cited:residualIds.map(String),newValue:nv.toString()})));
+          const {hash} = await send(sriClient,'commitParameter',[BigInt(R.paramId),nv,residualIds,reasoning]);
+          act('commit','commit',`§${R.termId}.${R.paramId}: ${fmt(P.value)} → ${fmt(nv)} · ${residualIds.length} residuals cited${P.mark?' · ⟂ MARK CLOSED':''} · ${txa(hash)}`);
+          R.commits.push({old:P.value, nv, markClosed:P.mark});
+          P = await readParam(R.paramId); // corrected prior; next round runs under it
+        }
+      } else {
+        think(`round ${R.round} clean — the prior and the world agree; looping`);
+      }
+      await sleep(400);
+    }
+
+    if(R.outcome==='running') R.outcome = stopRequested ? 'stopped' : R.outcome;
+    $('runtitle').textContent = R.outcome==='escalated' ? 'The fuse hit the edge of its authority.'
+      : R.outcome==='stoploss' ? 'The fuse stopped itself at the cap.' : 'The fuse has stopped.';
+    $('stopbtn').style.display='none';
+    $('go3').disabled=false; $('cur1')?.remove(); $('cur2')?.remove();
+  } catch(err){
+    act('revert','reverted',`${esc(err.shortMessage||err.message).slice(0,220)}`);
+    think(`<div class="verdict escalate">the contract refused — read the revert above; bounds are law</div>`);
+    $('runtitle').textContent='The constitution pushed back.';
+    $('stopbtn').style.display='none'; $('go3').disabled=false;
+  }
+}
+$('go3').onclick = ()=>{ debrief(); page(4); };
+
+// ── PAGE 4 · debrief ───────────────────────────────────────────────
+function debrief(){
+  const R = run; const W=[], I=[];
+  $('dlede').innerHTML = `Loop ran ${R.round} round${R.round!==1?'s':''} under <em>${R.mode}</em> conditions: ${R.paid} paid (${fmt(R.spent)} total), ${R.declined} declined, ${R.residualsTotal} residuals filed, ${R.commits.length} self-correction${R.commits.length!==1?'s':''}.`;
+  if(R.paid) W.push(`${R.paid} cited payment${R.paid>1?'s':''} totalling ${fmt(R.spent)} — every one referencing Art. ${R.termId}`);
+  for(const k of R.commits) W.push(`self-correction within written bounds: ${fmt(k.old)} → ${fmt(k.nv)}${k.markClosed?' · a guess became a measurement (⟂ closed)':''}`);
+  if(R.outcome==='stopped') W.push(`halted on your instruction — the stop was honoured mid-loop, cleanly`);
+  if(R.outcome==='stoploss') W.push(`the fuse stopped itself at the session cap — halting is an authored behaviour`);
+  if(R.outcome==='escalated') W.push(`the fuse recognised the limit of its own authority and stopped`);
+  if(R.declined) I.push(`${R.declined} quote${R.declined>1?'s':''} exceeded the authored ceiling — recorded, not breached`);
+  if(R.outcome==='escalated') I.push(`the vocabulary is missing a word — proposal #${R.proposalId} awaits your signature below`);
+  if(R.outcome==='stoploss') I.push(`spend cap ${fmt(R.stopLoss)} reached before the round completed`);
+  $('dwell').innerHTML = W.map(w=>`<div class="ditem">${w}</div>`).join('')||'<div class="dempty">nothing to report</div>';
+  $('dissues').innerHTML = I.filter(Boolean).map(w=>`<div class="ditem">${w}</div>`).join('')||'<div class="dempty">none — a clean run</div>';
+  if(R.outcome==='escalated'){
+    $('pendingpanel').style.display='';
+    $('pendtext').textContent = 'The fuse diagnosed a failure it has no authority to fix. A cost can be priced, or refused with a reason — never silently dropped.';
+    $('signbtn').style.display=''; $('refusebtn').style.display=''; $('signbtn').disabled=false;
+  } else $('pendingpanel').style.display='none';
+}
+$('signbtn').onclick = async ()=>{ $('e-sign').textContent=''; $('signbtn').disabled=true;
+  try{ const {hash} = await send(authorClient,'ratifyProposal',[BigInt(run.proposalId)]);
+    $('pendtext').innerHTML = `Signed. The vocabulary grew by one word — with your address on the event. ${txa(hash)}`;
+    $('signbtn').style.display='none'; $('refusebtn').style.display='none';
+  }catch(err){ $('e-sign').textContent = err.shortMessage||err.message; $('signbtn').disabled=false; } };
+$('refusebtn').onclick = async ()=>{ const reason = prompt('The reason:'); if(!reason) return;
+  try{ const {hash} = await send(authorClient,'refuseProposal',[BigInt(run.proposalId), reason]);
+    $('pendtext').innerHTML = `Refused, with a reason on the record. ${txa(hash)}`;
+    $('signbtn').style.display='none'; $('refusebtn').style.display='none';
+  }catch(err){ $('e-sign').textContent = err.shortMessage||err.message; } };
+$('loop').onclick = async ()=>{ await refreshReuse(); page(2); };
+</script>
+</body>
+</html>
