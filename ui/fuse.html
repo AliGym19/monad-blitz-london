@@ -104,6 +104,33 @@
   .bmenu a.here .t:after{content:"you are here";font:10px var(--mono);color:var(--meta);font-weight:400;letter-spacing:.06em}
   @media(prefers-reduced-motion:reduce){ .bmenu,.bm .caret{transition:none} }
 </style>
+
+<style id="ao-polish">
+  /* polish layer: constellation bg + motion */
+  html{background:#121110}
+  body{background:transparent}
+  #ao-net{position:fixed;inset:0;z-index:-1;pointer-events:none}
+  header{background:rgba(18,17,16,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .bmenu{background:rgba(18,17,16,.97)}
+  button{transition:background .15s,color .15s,border-color .15s,transform .12s}
+  button:not(:disabled):hover{transform:translateY(-1px)}
+  button.ghost:not(:disabled):hover{background:var(--ink);color:var(--paper)}
+  input[type=text],input[type=password],input[type=number],textarea,select{transition:border-color .18s}
+  .modes label{transition:border-color .18s}
+  .modes label:hover{border-color:var(--meta)}
+  .suggest button{transition:border-color .15s,color .15s}
+  @keyframes aoUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .hero h1,.page.on h1{animation:aoUp .7s cubic-bezier(.22,1,.36,1) both}
+  .hero p,.page.on .lede{animation:aoUp .7s .12s cubic-bezier(.22,1,.36,1) both}
+  .page.on .eyebrow{animation:aoUp .6s cubic-bezier(.22,1,.36,1) both}
+  [data-rv]{opacity:0;transform:translateY(14px);transition:opacity .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1)}
+  [data-rv].rv-in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){
+    [data-rv]{opacity:1;transform:none;transition:none}
+    .hero h1,.hero p,.page.on h1,.page.on .lede,.page.on .eyebrow{animation:none}
+    button{transition:none}
+  }
+</style>
 </head>
 <body>
 
@@ -406,5 +433,6 @@ load(); setInterval(load, 8000);
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') set(false); });
 })();
 </script>
+<script src="ao-polish.js"></script>
 </body>
 </html>
