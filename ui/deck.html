@@ -275,7 +275,7 @@
   var btn=document.getElementById('bmbtn');
   function set(o){ bm.classList.toggle('open',o); btn.setAttribute('aria-expanded',o?'true':'false'); }
   btn.addEventListener('click',function(e){ e.stopPropagation(); set(!bm.classList.contains('open')); });
-  document.addEventListener('click',function(e){ if(bm.contains(e.target)) e.stopPropagation(); else set(false); },true);
+  document.addEventListener('click',function(e){ if(!bm.contains(e.target)) set(false); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape') set(false); });
 })();
 </script>
